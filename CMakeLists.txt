@@ -10,7 +10,12 @@ include(hello_imgui_add_app)
 hello_imgui_add_app(catsight
 	src/main.cpp
 	src/Common.cpp
+	src/Resources.cpp
+
 	src/Folder.cpp
+	src/Explorer.cpp
+	src/Inspector.cpp
+	src/System.cpp
 )
 
 include_directories(
