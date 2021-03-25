@@ -76,7 +76,6 @@ UserInfo System::GetProcessUser(int pid)
 				auto pwd = getpwuid((uid_t)ret.uid);
 				if (pwd != nullptr) {
 					ret.username = pwd->pw_name;
-					printf("username %s\n", ret.username.c_str());
 				}
 				break;
 			}
