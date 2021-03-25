@@ -2,6 +2,7 @@
 
 #include <Common.h>
 #include <ProcessInfo.h>
+#include <Tab.h>
 
 class Inspector
 {
@@ -11,11 +12,13 @@ private:
 
 public:
 	bool m_isOpen = true;
+	s2::list<Tab*> m_tabs;
 
 public:
 	Inspector(const ProcessInfo& info);
 
 	const ProcessInfo& GetProcessInfo();
 
+	void RenderMemory(int index);
 	void Render();
 };

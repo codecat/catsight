@@ -3,6 +3,8 @@
 
 int main()
 {
+	srand(time(nullptr));
+
 	Explorer::Instance = new Explorer();
 	Explorer::Instance->Run();
 	delete Explorer::Instance;
