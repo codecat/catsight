@@ -2,7 +2,7 @@
 
 #include <Common.h>
 #include <Tab.h>
-#include <System/ProcessHandle.h>
+#include <System/ProcessMemoryRegion.h>
 
 class MemoryTab : public Tab
 {

@@ -25,6 +25,7 @@ hello_imgui_add_app(catsight
 	src/Inspector.cpp
 	src/Tab.cpp
 
+	src/Tabs/MapsTab.cpp
 	src/Tabs/MemoryTab.cpp
 )
 

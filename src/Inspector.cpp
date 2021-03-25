@@ -2,6 +2,7 @@
 #include <Inspector.h>
 #include <System.h>
 
+#include <Tabs/MapsTab.h>
 #include <Tabs/MemoryTab.h>
 
 #include <hello_imgui.h>
@@ -12,11 +13,11 @@ Inspector::Inspector(const ProcessInfo& info)
 	m_title = m_processInfo.filename;
 	m_processHandle = System::OpenProcessHandle(info);
 
+	m_tabs.add(new MapsTab(this, "Maps"));
+
 	auto regions = m_processHandle->GetMemoryRegions();
 	if (regions.len() > 0) {
-		for (int i = 0; i < 5; i++) {
-			m_tabs.add(new MemoryTab(this, s2::strprintf("Memory %d", i + 1), regions[0].m_start));
-		}
+		m_tabs.add(new MemoryTab(this, "Memory 1", regions[0].m_start));
 	}
 }
 

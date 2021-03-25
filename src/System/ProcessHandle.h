@@ -1,12 +1,7 @@
 #pragma once
 
 #include <Common.h>
-
-struct ProcessMemoryRegion
-{
-	uintptr_t m_start;
-	uintptr_t m_end;
-};
+#include <System/ProcessMemoryRegion.h>
 
 class ProcessHandle
 {

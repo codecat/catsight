@@ -6,14 +6,6 @@
 
 #include <hello_imgui.h>
 
-#if defined(PLATFORM_64)
-#  define POINTER_FORMAT "%016llX"
-#  define OFFSET_FORMAT "%llX"
-#else
-#  define POINTER_FORMAT "%08X"
-#  define OFFSET_FORMAT "%X"
-#endif
-
 MemoryTab::MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p)
 	: Tab(inspector, name)
 {

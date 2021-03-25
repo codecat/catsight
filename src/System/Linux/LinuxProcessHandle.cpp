@@ -73,6 +73,15 @@ s2::list<ProcessMemoryRegion> LinuxProcessHandle::GetMemoryRegions()
 			auto& region = ret.add();
 			region.m_start = (uintptr_t)mi.mi_base;
 			region.m_end = (uintptr_t)mi.mi_end;
+
+			if (mi.mi_flags.read != '-') { region.m_flags |= pmrf_Read; }
+			if (mi.mi_flags.write != '-') { region.m_flags |= pmrf_Write; }
+			if (mi.mi_flags.execute != '-') { region.m_flags |= pmrf_Execute; }
+			if (mi.mi_flags.protection != '-') { region.m_flags |= pmrf_Protect; }
+
+			if (mi.mi_matches == 11) {
+				region.m_path = mi.mi_path;
+			}
 		}
 	}
 	fclose(fh);
