@@ -1,3 +1,6 @@
 [submodule "external/hello_imgui"]
 	path = external/hello_imgui
 	url = https://github.com/pthom/hello_imgui
+[submodule "external/scratch2"]
+	path = external/scratch2
+	url = https://github.com/codecat/scratch2.git
