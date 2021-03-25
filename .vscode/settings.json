@@ -1,6 +1,7 @@
 {
 	"cmake.configureOnOpen": true,
 	"files.associations": {
-		"string": "cpp"
+		"string": "cpp",
+		"ranges": "cpp"
 	}
 }

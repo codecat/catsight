@@ -5,10 +5,14 @@ class Tab
 public:
 	bool m_isOpen = true;
 
-public:
-	virtual ~Tab() = 0;
+	class Inspector* m_inspector;
+	s2::string m_name;
 
-	virtual s2::string GetLabel() = 0;
+public:
+	Tab(Inspector* inspector, const s2::string& name);
+	virtual ~Tab();
+
+	virtual s2::string GetLabel();
 
 	virtual void Render() = 0;
 };

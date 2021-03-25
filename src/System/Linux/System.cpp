@@ -1,35 +1,27 @@
 #include <Common.h>
 #include <System.h>
-#include <Folder.h>
 
 #if defined(PLATFORM_LINUX)
-#  include <pwd.h>
-#  include <unistd.h>
-#endif
+#include <Folder.h>
+#include <System/Linux/LinuxProcessHandle.h>
+
+#include <pwd.h>
+#include <unistd.h>
 
 bool System::IsUserRoot(const UserInfo& info)
 {
-#if defined(MANIA_WINDOWS)
-	//TODO
-	return false;
-#else
 	return (info.uid == 0);
-#endif
 }
 
 UserInfo System::GetCurrentUser()
 {
 	UserInfo ret;
 
-#if defined(PLATFORM_WINDOWS)
-	//TODO
-#elif defined(PLATFORM_LINUX)
 	ret.uid = (int)getuid();
 	auto pwd = getpwuid((uid_t)ret.uid);
 	if (pwd != nullptr) {
 		ret.username = pwd->pw_name;
 	}
-#endif
 
 	return ret;
 }
@@ -38,15 +30,11 @@ UserInfo System::GetEffectiveUser()
 {
 	UserInfo ret;
 
-#if defined(PLATFORM_WINDOWS)
-	//TODO
-#elif defined(PLATFORM_LINUX)
 	ret.uid = (int)geteuid();
 	auto pwd = getpwuid((uid_t)ret.uid);
 	if (pwd != nullptr) {
 		ret.username = pwd->pw_name;
 	}
-#endif
 
 	return ret;
 }
@@ -55,9 +43,6 @@ UserInfo System::GetProcessUser(int pid)
 {
 	UserInfo ret;
 
-#if defined(PLATFORM_WINDOWS)
-	//TODO
-#elif defined(PLATFORM_LINUX)
 	FILE* fh = fopen(s2::strprintf("/proc/%d/status", pid), "r");
 	if (fh != nullptr) {
 		char buffer[512];
@@ -82,7 +67,6 @@ UserInfo System::GetProcessUser(int pid)
 		}
 		fclose(fh);
 	}
-#endif
 
 	return ret;
 }
@@ -91,9 +75,6 @@ s2::list<ProcessInfo> System::GetProcesses()
 {
 	s2::list<ProcessInfo> ret;
 
-#if defined(PLATFORM_WINDOWS)
-	//TODO
-#elif defined(PLATFORM_LINUX)
 	char linkBuffer[256];
 
 	FolderIndex fi("/proc/", false);
@@ -131,18 +112,13 @@ s2::list<ProcessInfo> System::GetProcesses()
 		newProcess.pid = pid;
 		newProcess.user = GetProcessUser(pid);
 	}
-#endif
-
-	ret.sort([](const void* pa, const void* pb) {
-		auto& a = *(ProcessInfo*)pa;
-		auto& b = *(ProcessInfo*)pb;
-		if (a.pid < b.pid) {
-			return 1;
-		} else if (a.pid > b.pid) {
-			return -1;
-		}
-		return 0;
-	});
 
 	return ret;
 }
+
+ProcessHandle* System::OpenProcessHandle(const ProcessInfo& info)
+{
+	return new LinuxProcessHandle(info);
+}
+
+#endif

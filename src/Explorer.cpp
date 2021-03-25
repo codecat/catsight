@@ -147,6 +147,16 @@ void Explorer::RenderMenu()
 			if (ImGui::IsWindowAppearing()) {
 				printf("Reading procs list\n");
 				m_processes = System::GetProcesses();
+				m_processes.sort([](const void* pa, const void* pb) {
+					auto& a = *(ProcessInfo*)pa;
+					auto& b = *(ProcessInfo*)pb;
+					if (a.pid < b.pid) {
+						return 1;
+					} else if (a.pid > b.pid) {
+						return -1;
+					}
+					return 0;
+				});
 			}
 
 			for (auto& proc : m_processes) {

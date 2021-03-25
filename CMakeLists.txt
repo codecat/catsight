@@ -10,7 +10,12 @@ include(hello_imgui_add_app)
 hello_imgui_add_app(catsight
 	src/main.cpp
 	src/Common.cpp
-	src/System.cpp
+	src/System/ProcessHandle.cpp
+
+	src/System/Linux/System.cpp
+	src/System/Linux/LinuxProcessHandle.cpp
+
+	src/System/Windows/System.cpp
 
 	src/Resources.cpp
 	src/Random.cpp
@@ -20,7 +25,7 @@ hello_imgui_add_app(catsight
 	src/Inspector.cpp
 	src/Tab.cpp
 
-	src/Tabs/Memory.cpp
+	src/Tabs/MemoryTab.cpp
 )
 
 include_directories(
@@ -34,4 +39,10 @@ if(WIN32)
 	add_definitions(-DPLATFORM_WINDOWS)
 elseif(UNIX)
 	add_definitions(-DPLATFORM_LINUX)
+endif()
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+	add_definitions(-DPLATFORM_64)
+else()
+	add_definitions(-DPLATFORM_32)
 endif()

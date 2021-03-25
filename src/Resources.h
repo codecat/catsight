@@ -5,6 +5,6 @@
 
 namespace Resources
 {
-	ImFont* FontMono;
-	ImFont* FontBold;
+	extern ImFont* FontMono;
+	extern ImFont* FontBold;
 }
