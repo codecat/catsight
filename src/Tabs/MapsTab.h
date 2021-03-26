@@ -13,5 +13,7 @@ public:
 	MapsTab(Inspector* inspector, const s2::string& name);
 	virtual ~MapsTab();
 
+	virtual bool CanClose() override;
+
 	virtual void Render() override;
 };

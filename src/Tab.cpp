@@ -15,3 +15,8 @@ s2::string Tab::GetLabel()
 {
 	return m_name;
 }
+
+bool Tab::CanClose()
+{
+	return true;
+}

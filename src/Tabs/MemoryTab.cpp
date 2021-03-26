@@ -23,6 +23,7 @@ void MemoryTab::Render()
 		return;
 	}
 
+	ImGui::BeginChild("Memory");
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 0));
 
 	size_t base = m_region.m_start;
@@ -35,8 +36,24 @@ void MemoryTab::Render()
 	while (clipper.Step()) {
 		for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
 			uintptr_t offset = (uintptr_t)(i * sizeof(uintptr_t));
-			intptr_t displayOffset = (intptr_t)offset - (intptr_t)m_baseOffset;
 			uintptr_t address = base + offset;
+
+			intptr_t relativeOffset = (intptr_t)offset - (intptr_t)m_baseOffset;
+
+			intptr_t displayOffset, displayOffsetDepth;
+			if (m_baseSize == 0) {
+				displayOffset = relativeOffset;
+				displayOffsetDepth = 0;
+			} else {
+				displayOffset = relativeOffset % (intptr_t)m_baseSize;
+				displayOffsetDepth = relativeOffset / (intptr_t)m_baseSize;
+
+				if (relativeOffset < 0) {
+					displayOffset = m_baseSize + displayOffset - sizeof(uintptr_t);
+					displayOffsetDepth *= -1;
+					displayOffsetDepth++;
+				}
+			}
 
 			if (offset + sizeof(uintptr_t) > size) {
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
@@ -46,14 +63,13 @@ void MemoryTab::Render()
 			}
 
 			ImGui::PushID((void*)address);
+			ImGui::PushFont(Resources::FontMono);
 
 			float column = 0.0f;
 
-			ImGui::PushFont(Resources::FontMono);
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(.5f, .5f, .5f, 1));
 			ImGui::Text(POINTER_FORMAT, address);
 			ImGui::PopStyleColor();
-			ImGui::PopFont();
 			ImGui::SameLine();
 
 			column += 130;
@@ -62,7 +78,18 @@ void MemoryTab::Render()
 				m_baseOffset = offset;
 			}
 			ImGui::SameLine();
+			if (relativeOffset > 0 && ImGui::Button(">")) {
+				if (m_baseSize == relativeOffset) {
+					m_baseSize = 0;
+				} else {
+					m_baseSize = relativeOffset;
+				}
+			}
 
+			column += 60;
+			ImGui::SameLine(column);
+
+			ImGui::PushStyleColor(ImGuiCol_Text, ImColor::HSV(fmodf((float)displayOffsetDepth * 0.15f, 1.0f), 0.65f, 1.0f).Value);
 			if (displayOffset == 0) {
 				ImGui::TextUnformatted("$ ==>");
 			} else {
@@ -70,12 +97,14 @@ void MemoryTab::Render()
 				if (displayOffset < 0) {
 					format = "$-" OFFSET_FORMAT;
 				}
-				const int depth = 0;
 				uintptr_t absDisplayOffset = (uintptr_t)(displayOffset < 0 ? displayOffset * -1 : displayOffset);
-				ImGui::TextColored(ImColor::HSV(fmodf((float)depth * 0.15f, 1.0f), 0.65f, 1.0f), format, absDisplayOffset);
+				ImGui::Text(format, absDisplayOffset);
 			}
+			ImGui::PopStyleColor();
+			ImGui::PopFont();
 
-			ImGui::SameLine(column + 70.0f);
+			column += 100;
+			ImGui::SameLine(column);
 
 			uintptr_t value = 0;
 			if (m_inspector->m_processHandle->ReadMemory(address, &value, sizeof(value)) == sizeof(value)) {
@@ -88,7 +117,8 @@ void MemoryTab::Render()
 				ImGui::PopFont();
 			}
 
-			ImGui::SameLine(column + 200.0f);
+			column += 120;
+			ImGui::SameLine(column);
 
 #if 0
 			while (currentMemberSize < sizeof(uintptr_t)) {
@@ -118,4 +148,5 @@ void MemoryTab::Render()
 	}
 
 	ImGui::PopStyleVar();
+	ImGui::EndChild();
 }

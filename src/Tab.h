@@ -13,6 +13,7 @@ public:
 	virtual ~Tab();
 
 	virtual s2::string GetLabel();
+	virtual bool CanClose();
 
 	virtual void Render() = 0;
 };

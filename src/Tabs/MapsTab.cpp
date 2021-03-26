@@ -14,6 +14,11 @@ MapsTab::~MapsTab()
 {
 }
 
+bool MapsTab::CanClose()
+{
+	return false;
+}
+
 void MapsTab::Render()
 {
 	if (ImGui::IsWindowAppearing()) {
