@@ -46,6 +46,12 @@ size_t LinuxProcessHandle::ReadMemory(uintptr_t p, void* buffer, size_t size)
 	return fread(buffer, 1, size, m_fhMemory);
 }
 
+bool LinuxProcessHandle::IsReadableMemory(uintptr_t p)
+{
+	uint8_t b;
+	return ReadMemory(p, &b, 1) == 1;
+}
+
 s2::list<ProcessMemoryRegion> LinuxProcessHandle::GetMemoryRegions()
 {
 	s2::list<ProcessMemoryRegion> ret;

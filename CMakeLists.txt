@@ -34,6 +34,7 @@ hello_imgui_add_app(catsight
 
 include_directories(
 	external/scratch2/scratch2/
+	external/glm/
 	src/
 )
 

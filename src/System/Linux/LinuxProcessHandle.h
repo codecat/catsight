@@ -15,6 +15,7 @@ public:
 	virtual ~LinuxProcessHandle();
 
 	virtual size_t ReadMemory(uintptr_t p, void* buffer, size_t size) override;
+	virtual bool IsReadableMemory(uintptr_t p) override;
 
 	virtual s2::list<ProcessMemoryRegion> GetMemoryRegions() override;
 };

@@ -3,6 +3,7 @@
 
 #include <Inspector.h>
 #include <Resources.h>
+#include <Helpers/MemoryButton.h>
 
 #include <hello_imgui.h>
 
@@ -56,6 +57,128 @@ void MemoryTab::ScrollToOffset(uintptr_t offset)
 	if (offset < m_region.Size()) {
 		m_scrollToOffset = offset;
 	}
+}
+
+uint16_t MemoryTab::RenderMember(uint16_t offset, uint16_t relativeOffset, intptr_t displayOffset)
+{
+	offset += relativeOffset;
+	uintptr_t address = (uintptr_t)m_region.m_start + offset;
+
+	// Prepare the data we need for rendering
+	bool renderFound = false;
+	bool renderBuffer = false;
+
+	// Shorthand for process handle
+	auto handle = m_inspector->m_processHandle;
+
+	// Prepare some types derived from the value at the address
+	uintptr_t p = handle->Read<uintptr_t>(address);
+	uint32_t u32 = handle->Read<uint32_t>(address);
+	float f = handle->Read<float>(address);
+
+#if defined(PLATFORM_64)
+	// 64 bit pointers are typically aligned to 16 bytes
+	//TODO: Make an option to ignore this check
+	bool pointerIsAligned = (p & 0xF) == 0;
+#else
+	// 32 bit targets don't care about alignment
+	bool pointerIsAligned = true;
+#endif
+	const bool resolveFloats = false; //TODO: Option for this
+
+	// NOTE: The order of which these are checked is important! We should test for the least common types first!
+
+	//TODO: Allow plugins to detect stuff here
+
+	// It might be a string if:
+	// - The relative offset is 0
+	// - The pointer is not 0
+	// - The pointer is valid and can be read
+	// - There are at least 5 printable characters
+	if (relativeOffset == 0 && p != 0 && handle->IsReadableMemory(p)) {
+		for (int i = 0; i < 5; i++) {
+			char c = handle->Read<char>(p + i);
+			if (c < 0x20 || c > 0x7E) {
+				break;
+			}
+			if (i == 4) {
+				renderFound = true;
+
+				m_stringBuffer = handle->ReadCString(p);
+
+				ImGui::SameLine();
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, .5f, .5f, 1));
+				ImGui::Text("\"%s\"", m_stringBuffer.c_str());
+				ImGui::PopStyleColor();
+				return sizeof(uintptr_t);
+			}
+		}
+	}
+
+	// It might be a wide string if:
+	// - The relative offset is 0
+	// - The pointer is not 0
+	// - The pointer is valid and can be read
+	// - There are at least 5 printable wide characters
+	//TODO: Fix this
+	/*
+	if (relativeOffset == 0 && p != 0 && handle->IsReadableMemory(p)) {
+		for (int i = 0; i < 5; i++) {
+			wchar_t c = handle->Read<wchar_t>(p + i);
+			if (c < 0x20 || c > 0x7E) {
+				break;
+			}
+			if (i == 4) {
+				renderFound = true;
+				ImGui::SameLine();
+				//TODO: Render wide string
+			}
+		}
+	}
+	*/
+
+	if (resolveFloats) {
+		// It might be a float if:
+		// - The 32 bit integer is not 0
+		// - The float is not NaN
+		// - It's larger than or equal to 0.0001f
+		// - It's smaller than or equal to 100000.0f
+		if (u32 != 0 && !std::isnan(f) && !std::isinf(f) && fabsf(f) >= 0.0001f && fabsf(f) <= 100000.0f) {
+			renderFound = true;
+			ImGui::SameLine();
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
+			ImGui::Text("%g", f);
+			ImGui::PopStyleColor();
+			return sizeof(float);
+		}
+	}
+
+	// It might be an arbitrary pointer if:
+	// - The relative offset is 0
+	// - The pointer is not 0
+	// - The pointer is aligned
+	// - The pointer is valid and can be read
+	if (relativeOffset == 0 && p != 0 && pointerIsAligned && (p & 0xFFFFF0) != 0 && handle->IsReadableMemory(p)) {
+		// We can't do anything with arbitrary pointers besides show a memory button
+		renderFound = true;
+		ImGui::SameLine();
+		Helpers::MemoryButton(m_inspector, p, "Memory");
+		return sizeof(uintptr_t);
+	}
+
+	//TODO: We can't display this at the end!
+	/*
+	if (renderFound && relativeOffset > 0) {
+		ImGui::SameLine();
+		if (displayOffset < 0) {
+			ImGui::Text("$\\$f77-%X", abs(displayOffset));
+		} else {
+			ImGui::Text("$\\$f77+%X", displayOffset);
+		}
+	}
+	*/
+
+	return 0;
 }
 
 s2::string MemoryTab::GetLabel()
@@ -181,9 +304,8 @@ void MemoryTab::Render()
 			column += 120;
 			ImGui::SameLine(column);
 
-#if 0
 			while (currentMemberSize < sizeof(uintptr_t)) {
-				uint16_t size = RenderMember(tab, offset, currentMemberSize);
+				uint16_t size = RenderMember(offset, currentMemberSize, displayOffset);
 				if (size == 0) {
 					// On 32 bit, advancing 4 bytes goes to the next row (eg. every possible item)
 					// On 64 bit, advancing 4 bytes goes to the next possible item (eg. float, int32, etc)
@@ -200,7 +322,6 @@ void MemoryTab::Render()
 			if (currentMemberSize > 0) {
 				currentMemberSize -= (currentMemberSize >= sizeof(uintptr_t) ? sizeof(uintptr_t) : currentMemberSize);
 			}
-#endif
 
 			ImGui::NewLine();
 

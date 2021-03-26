@@ -15,6 +15,7 @@ public:
 
 private:
 	intptr_t m_scrollToOffset = -1;
+	s2::string m_stringBuffer;
 
 public:
 	MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p);
@@ -27,6 +28,8 @@ public:
 
 	void ScrollTo(uintptr_t p);
 	void ScrollToOffset(uintptr_t offset);
+
+	uint16_t RenderMember(uint16_t offset, uint16_t relativeOffset, intptr_t displayOffset);
 
 	virtual s2::string GetLabel() override;
 
