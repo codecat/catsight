@@ -20,3 +20,7 @@ bool Tab::CanClose()
 {
 	return true;
 }
+
+void Tab::RenderMenu()
+{
+}

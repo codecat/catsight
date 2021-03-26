@@ -13,9 +13,23 @@ public:
 	uintptr_t m_baseOffset = 0;
 	uintptr_t m_baseSize = 0;
 
+private:
+	intptr_t m_scrollToOffset = -1;
+
 public:
 	MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p);
 	virtual ~MemoryTab();
 
+	void SetRegion(const ProcessMemoryRegion& region, uintptr_t baseOffset = 0, uintptr_t baseSize = 0);
+	void SetRegion(uintptr_t p, uintptr_t baseOffset = 0, uintptr_t baseSize = 0);
+
+	void GoTo(uintptr_t p);
+
+	void ScrollTo(uintptr_t p);
+	void ScrollToOffset(uintptr_t offset);
+
+	virtual s2::string GetLabel() override;
+
+	virtual void RenderMenu() override;
 	virtual void Render() override;
 };

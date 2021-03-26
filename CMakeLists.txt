@@ -11,6 +11,7 @@ hello_imgui_add_app(catsight
 	src/main.cpp
 	src/Common.cpp
 	src/System/ProcessHandle.cpp
+	src/System/ProcessMemoryRegion.cpp
 
 	src/System/Linux/System.cpp
 	src/System/Linux/LinuxProcessHandle.cpp
@@ -27,6 +28,8 @@ hello_imgui_add_app(catsight
 
 	src/Tabs/MapsTab.cpp
 	src/Tabs/MemoryTab.cpp
+
+	src/Helpers/MemoryButton.cpp
 )
 
 include_directories(

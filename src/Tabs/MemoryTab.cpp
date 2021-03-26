@@ -10,10 +10,71 @@ MemoryTab::MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p)
 	: Tab(inspector, name)
 {
 	m_hasValidRegion = m_inspector->m_processHandle->GetMemoryRegion(p, m_region);
+	if (p > m_region.m_start) {
+		ScrollTo(p);
+	}
 }
 
 MemoryTab::~MemoryTab()
 {
+}
+
+void MemoryTab::SetRegion(const ProcessMemoryRegion& region, uintptr_t baseOffset, uintptr_t baseSize)
+{
+	m_hasValidRegion = true;
+	m_region = region;
+
+	if (baseOffset < m_region.Size()) {
+		m_baseOffset = baseOffset;
+	}
+	m_baseSize = baseSize;
+}
+
+void MemoryTab::SetRegion(uintptr_t p, uintptr_t baseOffset, uintptr_t baseSize)
+{
+	ProcessMemoryRegion region;
+	if (m_inspector->m_processHandle->GetMemoryRegion(p, region)) {
+		SetRegion(region, baseOffset, baseSize);
+	}
+}
+
+void MemoryTab::GoTo(uintptr_t p)
+{
+	if (!m_region.Contains(p)) {
+		SetRegion(p);
+	}
+	ScrollTo(p);
+}
+
+void MemoryTab::ScrollTo(uintptr_t p)
+{
+	ScrollToOffset(p - m_region.m_start);
+}
+
+void MemoryTab::ScrollToOffset(uintptr_t offset)
+{
+	if (offset < m_region.Size()) {
+		m_scrollToOffset = offset;
+	}
+}
+
+s2::string MemoryTab::GetLabel()
+{
+	return s2::strprintf("%s (" POINTER_FORMAT ")###Memory", Tab::GetLabel().c_str(), m_region.m_start + m_baseOffset);
+}
+
+void MemoryTab::RenderMenu()
+{
+	if (ImGui::BeginMenu("Memory")) {
+		if (ImGui::MenuItem("Reset base offset", nullptr, nullptr, m_baseOffset > 0)) {
+			m_baseOffset = 0;
+		}
+		if (ImGui::MenuItem("Reset base size", nullptr, nullptr, m_baseSize > 0)) {
+			m_baseSize = 0;
+		}
+
+		ImGui::EndMenu();
+	}
 }
 
 void MemoryTab::Render()
@@ -145,6 +206,11 @@ void MemoryTab::Render()
 
 			ImGui::PopID();
 		}
+	}
+
+	if (m_scrollToOffset != -1) {
+		ImGui::SetScrollFromPosY(ImGui::GetCursorStartPos().y + m_scrollToOffset / sizeof(uintptr_t) * clipper.ItemsHeight, 0.0f);
+		m_scrollToOffset = -1;
 	}
 
 	ImGui::PopStyleVar();

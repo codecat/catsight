@@ -40,7 +40,9 @@ const ProcessInfo& Inspector::GetProcessInfo()
 
 void Inspector::Render()
 {
-	auto windowTitle = s2::strprintf("%s##Inspector_%s", m_title.c_str(), m_processInfo.filename.c_str());
+	auto windowTitle = s2::strprintf("%s (%d, %s)###Inspector_%s", m_title.c_str(), m_processInfo.pid, m_processInfo.user.username.c_str(), m_processInfo.filename.c_str());
+
+	ImGui::SetNextWindowSize(ImVec2(800, 800), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin(windowTitle, &m_isOpen, ImGuiWindowFlags_MenuBar)) {
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu("Tabs")) {
@@ -55,13 +57,18 @@ void Inspector::Render()
 			ImGui::EndMenuBar();
 		}
 
+		Tab* activeTab = nullptr;
+
 		if (ImGui::BeginTabBar("Tabs", ImGuiTabBarFlags_AutoSelectNewTabs)) {
 			for (size_t i = 0; i < m_tabs.len(); i++) {
 				auto tab = m_tabs[i];
 				ImGui::PushID(tab);
 
 				ImGuiTabItemFlags tabFlags = ImGuiTabItemFlags_None;
-				//tabFlags |= ImGuiTabItemFlags_SetSelected;
+				if (tab->m_shouldFocus) {
+					tabFlags |= ImGuiTabItemFlags_SetSelected;
+					tab->m_shouldFocus = false;
+				}
 
 				bool tabOpen = true;
 				bool tabVisible = true;
@@ -72,6 +79,8 @@ void Inspector::Render()
 				}
 
 				if (tabVisible) {
+					activeTab = tab;
+
 					ImGui::BeginChild("TabContent");
 					tab->Render();
 					ImGui::EndChild();
@@ -79,6 +88,7 @@ void Inspector::Render()
 				}
 
 				if (!tabOpen) {
+					activeTab = nullptr;
 					delete tab;
 					m_tabs.remove(i);
 					i--;
@@ -88,6 +98,13 @@ void Inspector::Render()
 			}
 
 			ImGui::EndTabBar();
+		}
+
+		if (ImGui::BeginMenuBar()) {
+			if (activeTab != nullptr) {
+				activeTab->RenderMenu();
+			}
+			ImGui::EndMenuBar();
 		}
 	}
 	ImGui::End();

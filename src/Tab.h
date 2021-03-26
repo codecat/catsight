@@ -3,7 +3,7 @@
 class Tab
 {
 public:
-	bool m_isOpen = true;
+	bool m_shouldFocus = false;
 
 	class Inspector* m_inspector;
 	s2::string m_name;
@@ -15,5 +15,6 @@ public:
 	virtual s2::string GetLabel();
 	virtual bool CanClose();
 
+	virtual void RenderMenu();
 	virtual void Render() = 0;
 };
