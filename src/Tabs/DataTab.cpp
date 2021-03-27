@@ -9,60 +9,13 @@
 #include <hello_imgui.h>
 
 DataTab::DataTab(Inspector* inspector, const s2::string& name, uintptr_t p)
-	: Tab(inspector, name)
+	: MemoryTab(inspector, name, p)
 {
-	m_hasValidRegion = m_inspector->m_processHandle->GetMemoryRegion(p, m_region);
-
-	SetRegion(m_region);
-	if (p > m_region.m_start) {
-		ScrollTo(p);
-	}
+	m_addressMask = 0x7;
 }
 
 DataTab::~DataTab()
 {
-}
-
-void DataTab::SetRegion(const ProcessMemoryRegion& region, uintptr_t baseOffset, uintptr_t baseSize)
-{
-	m_hasValidRegion = true;
-	m_region = region;
-
-	if (baseOffset < m_region.Size()) {
-		m_baseOffset = baseOffset;
-	}
-	m_baseSize = baseSize;
-
-	m_invalidated = true;
-}
-
-void DataTab::SetRegion(uintptr_t p, uintptr_t baseOffset, uintptr_t baseSize)
-{
-	ProcessMemoryRegion region;
-	if (m_inspector->m_processHandle->GetMemoryRegion(p, region)) {
-		SetRegion(region, baseOffset, baseSize);
-	}
-}
-
-void DataTab::GoTo(uintptr_t p)
-{
-	if (!m_region.Contains(p)) {
-		SetRegion(p);
-	}
-	ScrollTo(p);
-}
-
-void DataTab::ScrollTo(uintptr_t p)
-{
-	ScrollToOffset(p - m_region.m_start);
-}
-
-void DataTab::ScrollToOffset(uintptr_t offset)
-{
-	if (offset < m_region.Size()) {
-		m_topOffset = offset;
-		m_invalidated = true;
-	}
 }
 
 uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr_t displayOffset, int lineIndex)
@@ -230,68 +183,17 @@ void DataTab::RenderMenu()
 
 void DataTab::Render()
 {
-	if (ImGui::IsWindowAppearing()) {
-		m_invalidated = true;
+	m_lineDetails.ensure_memory(m_itemsPerPage + 1);
+	while (m_lineDetails.len() < m_itemsPerPage + 1) {
+		m_lineDetails.add();
 	}
-
-	if (!m_hasValidRegion) {
-		ImGui::TextUnformatted("No valid region");
-		return;
-	}
-
-	ImGui::BeginChild("Memory", ImVec2(), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-
-	auto& style = ImGui::GetStyle();
-	auto windowSize = ImGui::GetWindowSize();
-	auto startPos = ImGui::GetCursorPos();
-
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 0));
 
 	size_t base = m_region.m_start;
 	size_t size = m_region.m_end - m_region.m_start;
 
 	uint16_t currentMemberSize = 0;
 
-	const float itemHeight = 22.0f;
-	const int itemsPerPage = windowSize.y / itemHeight;
-
-	m_lineDetails.ensure_memory(itemsPerPage + 1);
-	while (m_lineDetails.len() < itemsPerPage + 1) {
-		m_lineDetails.add();
-	}
-
-	//NOTE: This assumes that pages are always aligned. Is that always the case though?
-	m_topOffsetMax = m_region.Size() - itemsPerPage * sizeof(uintptr_t);
-
-	if (ImGui::IsWindowHovered()) {
-		float mouseWheel = ImGui::GetIO().MouseWheel;
-		if (mouseWheel != 0) {
-			// mouseWheel: negative = scroll down, positive = scroll up
-			m_topOffset += ((int)mouseWheel * -1) * 4 * sizeof(uintptr_t);
-			m_invalidated = true;
-		}
-	}
-
-	// Virtual scrollbar
-	ImGui::SetCursorPos(ImVec2(startPos.x + windowSize.x - style.ScrollbarSize, startPos.y));
-	intptr_t virtualScrollPos = m_topOffset & ~0x7;
-	intptr_t virtualScrollMin = 0;
-	if (ImGui::VSliderScalar("", ImVec2(style.ScrollbarSize, windowSize.y), ImGuiDataType_S64, &virtualScrollPos, &m_topOffsetMax, &virtualScrollMin, "", ImGuiSliderFlags_NoInput)) {
-		m_topOffset = virtualScrollPos & ~0x7;
-		m_invalidated = true;
-	}
-	ImGui::SetCursorPos(startPos);
-
-	// Constrain scroll offset
-	if (m_topOffset < 0) {
-		m_topOffset = 0;
-		m_invalidated = true;
-	} else if (m_topOffset > m_topOffsetMax) {
-		m_topOffset = m_topOffsetMax;
-		m_invalidated = true;
-	}
-
-	for (int i = 0; i < itemsPerPage + 1; i++) {
+	for (int i = 0; i < m_itemsPerPage + 1; i++) {
 		uintptr_t offset = (uintptr_t)m_topOffset + i * sizeof(uintptr_t);
 		uintptr_t address = base + offset;
 
@@ -401,14 +303,6 @@ void DataTab::Render()
 		}
 
 		ImGui::NewLine();
-
 		ImGui::PopID();
 	}
-
-	if (m_invalidated) {
-		m_invalidated = false;
-	}
-
-	ImGui::PopStyleVar();
-	ImGui::EndChild();
 }

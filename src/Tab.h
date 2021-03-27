@@ -16,5 +16,7 @@ public:
 	virtual bool CanClose();
 
 	virtual void RenderMenu();
-	virtual void Render() = 0;
+	virtual bool RenderBegin();
+	virtual void Render();
+	virtual void RenderEnd();
 };

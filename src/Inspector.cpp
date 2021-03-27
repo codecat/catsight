@@ -82,7 +82,10 @@ void Inspector::Render()
 					activeTab = tab;
 
 					ImGui::BeginChild("TabContent");
-					tab->Render();
+					if (tab->RenderBegin()) {
+						tab->Render();
+						tab->RenderEnd();
+					}
 					ImGui::EndChild();
 					ImGui::EndTabItem();
 				}

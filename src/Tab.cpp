@@ -24,3 +24,16 @@ bool Tab::CanClose()
 void Tab::RenderMenu()
 {
 }
+
+bool Tab::RenderBegin()
+{
+	return true;
+}
+
+void Tab::Render()
+{
+}
+
+void Tab::RenderEnd()
+{
+}
