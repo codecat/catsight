@@ -8,12 +8,7 @@
 MemoryTab::MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p)
 	: Tab(inspector, name)
 {
-	m_hasValidRegion = m_inspector->m_processHandle->GetMemoryRegion(p, m_region);
-
-	SetRegion(m_region);
-	if (p > m_region.m_start) {
-		ScrollTo(p);
-	}
+	GoTo(p);
 }
 
 MemoryTab::~MemoryTab()
@@ -33,15 +28,72 @@ void MemoryTab::SetRegion(uintptr_t p)
 	ProcessMemoryRegion region;
 	if (m_inspector->m_processHandle->GetMemoryRegion(p, region)) {
 		SetRegion(region);
+	} else {
+		m_hasValidRegion = false;
 	}
 }
 
-void MemoryTab::GoTo(uintptr_t p)
+void MemoryTab::GoTo(uintptr_t p, bool addToHistory)
 {
+	// Don't have to do anything if we're already there
+	if (m_hasValidRegion && p == m_region.m_start + m_topOffset) {
+		return;
+	}
+
 	if (!m_region.Contains(p)) {
 		SetRegion(p);
 	}
 	ScrollTo(p);
+
+	if (addToHistory) {
+		AddHistory();
+	}
+}
+
+void MemoryTab::AddHistory()
+{
+	// Remove all history items after the current index
+	while ((int)m_history.len() > m_historyIndex + 1) {
+		m_history.remove(m_history.len() - 1);
+	}
+
+	// Add a new history item
+	m_history.add(m_region.m_start + m_topOffset);
+	m_historyIndex++;
+
+	// Make sure we don't have too many items
+	LimitHistorySize();
+}
+
+void MemoryTab::LimitHistorySize()
+{
+	// Remove history items from the bottom of the stack until we satisfy the limit
+	while (m_history.len() > m_maxHistoryItems) {
+		m_history.remove(0);
+		m_historyIndex--;
+	}
+}
+
+void MemoryTab::GoToHistory(int offset)
+{
+	// Add to the current index
+	int newIndex = m_historyIndex + offset;
+
+	// Clamp new index to boundaries
+	if (newIndex < 0) {
+		newIndex = 0;
+	} else if (newIndex >= (int)m_history.len()) {
+		newIndex = (int)m_history.len() - 1;
+	}
+
+	// Don't have to do anything if the history index didn't actually change
+	if (newIndex == m_historyIndex) {
+		return;
+	}
+	m_historyIndex = newIndex;
+
+	// Go to the pointer without adding it to the history
+	GoTo(m_history[m_historyIndex], false);
 }
 
 void MemoryTab::ScrollTo(uintptr_t p)
@@ -69,6 +121,26 @@ void MemoryTab::RenderMenu()
 
 		ImGui::Separator();
 
+		if (ImGui::MenuItem("Previous", nullptr, nullptr, m_historyIndex > 0)) {
+			GoToHistory(-1);
+		}
+		if (ImGui::MenuItem("Next", nullptr, nullptr, m_historyIndex < (int)m_history.len() - 1)) {
+			GoToHistory(1);
+		}
+		if (ImGui::BeginMenu("History", m_history.len() > 0)) {
+			for (int i = 0; i < (int)m_history.len(); i++) {
+				auto p = m_history[i];
+				auto strItem = s2::strprintf("%d: " POINTER_FORMAT, i, p);
+				if (ImGui::MenuItem(strItem, nullptr, m_historyIndex == i)) {
+					GoTo(p, false);
+					m_historyIndex = i;
+				}
+			}
+			ImGui::EndMenu();
+		}
+
+		ImGui::Separator();
+
 		if (ImGui::MenuItem("Go to..", "Ctrl+G")) {
 			m_ui_gotoPopupShow = true;
 		}
@@ -82,15 +154,18 @@ void MemoryTab::RenderMenu()
 
 bool MemoryTab::RenderBegin()
 {
+	// Invalidate if we're switching to this tab
 	if (ImGui::IsWindowAppearing()) {
 		m_invalidated = true;
 	}
 
+	// Stop if we don't have a valid region
 	if (!m_hasValidRegion) {
 		ImGui::TextUnformatted("No valid region");
 		return false;
 	}
 
+	// Go To dialog (Ctrl+G)
 	if (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed('G')) {
 		m_ui_gotoPopupShow = true;
 	}
@@ -129,6 +204,15 @@ bool MemoryTab::RenderBegin()
 		ImGui::EndPopup();
 	}
 
+	// Handle mouse previous and next buttons to cycle through history
+	if (ImGui::IsMouseClicked(3)) {
+		GoToHistory(-1);
+	}
+	if (ImGui::IsMouseClicked(4)) {
+		GoToHistory(1);
+	}
+
+	// Begin memory view
 	ImGui::BeginChild("Memory", ImVec2(), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 0));
 
