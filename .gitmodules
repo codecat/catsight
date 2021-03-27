@@ -7,3 +7,6 @@
 [submodule "external/glm"]
 	path = external/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "external/zydis"]
+	path = external/zydis
+	url = https://github.com/zyantific/zydis.git
