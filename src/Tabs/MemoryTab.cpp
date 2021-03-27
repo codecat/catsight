@@ -11,6 +11,8 @@ MemoryTab::MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p)
 	: Tab(inspector, name)
 {
 	m_hasValidRegion = m_inspector->m_processHandle->GetMemoryRegion(p, m_region);
+
+	SetRegion(m_region);
 	if (p > m_region.m_start) {
 		ScrollTo(p);
 	}
@@ -29,6 +31,8 @@ void MemoryTab::SetRegion(const ProcessMemoryRegion& region, uintptr_t baseOffse
 		m_baseOffset = baseOffset;
 	}
 	m_baseSize = baseSize;
+
+	m_invalidated = true;
 }
 
 void MemoryTab::SetRegion(uintptr_t p, uintptr_t baseOffset, uintptr_t baseSize)
@@ -56,17 +60,18 @@ void MemoryTab::ScrollToOffset(uintptr_t offset)
 {
 	if (offset < m_region.Size()) {
 		m_topOffset = offset;
+		m_invalidated = true;
 	}
 }
 
-uint16_t MemoryTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr_t displayOffset)
+uint16_t MemoryTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr_t displayOffset, int lineIndex)
 {
+	assert(lineIndex < (int)m_lineDetails.len());
+	auto& lineDetails = m_lineDetails[lineIndex];
+	bool lineAppearing = m_invalidated;
+
 	offset += relativeOffset;
 	uintptr_t address = (uintptr_t)m_region.m_start + offset;
-
-	// Prepare the data we need for rendering
-	bool renderFound = false;
-	bool renderBuffer = false;
 
 	// Shorthand for process handle
 	auto handle = m_inspector->m_processHandle;
@@ -102,8 +107,6 @@ uint16_t MemoryTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intp
 				break;
 			}
 			if (i == 4) {
-				renderFound = true;
-
 				m_stringBuffer = handle->ReadCString(p);
 
 				ImGui::SameLine();
@@ -129,7 +132,6 @@ uint16_t MemoryTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intp
 				break;
 			}
 			if (i == 4) {
-				renderFound = true;
 				ImGui::SameLine();
 				//TODO: Render wide string
 			}
@@ -144,7 +146,6 @@ uint16_t MemoryTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intp
 		// - It's larger than or equal to 0.0001f
 		// - It's smaller than or equal to 100000.0f
 		if (u32 != 0 && !std::isnan(f) && !std::isinf(f) && fabsf(f) >= 0.0001f && fabsf(f) <= 100000.0f) {
-			renderFound = true;
 			ImGui::SameLine();
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
 			ImGui::Text("%g", f);
@@ -158,11 +159,25 @@ uint16_t MemoryTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intp
 	// - The pointer is not 0
 	// - The pointer is aligned
 	// - The pointer is valid and can be read
-	if (relativeOffset == 0 && p != 0 && pointerIsAligned && (p & 0xFFFFF0) != 0 && handle->IsReadableMemory(p)) {
-		// We can't do anything with arbitrary pointers besides show a memory button
-		renderFound = true;
+	if (relativeOffset == 0 && p != 0 && (p & 0xFFFFF0) != 0 && handle->IsReadableMemory(p)) {
+		if (lineAppearing) {
+			ProcessMemoryRegion region;
+			if (handle->GetMemoryRegion(p, region)) {
+				lineDetails.m_memoryExecutable = region.IsExecute();
+			}
+		}
+
 		ImGui::SameLine();
-		Helpers::MemoryButton(m_inspector, p, "Memory");
+
+		if (lineDetails.m_memoryExecutable) {
+			ImGui::TextDisabled("(executable)");
+			ImGui::SameLine();
+		}
+
+		// We can't do anything else with arbitrary pointers besides show a memory button
+		if (pointerIsAligned) {
+			Helpers::MemoryButton(m_inspector, p, "Memory");
+		}
 		return sizeof(uintptr_t);
 	}
 
@@ -199,14 +214,17 @@ void MemoryTab::RenderMenu()
 		ImGui::Separator();
 
 		if (ImGui::MenuItem("Scroll to top", nullptr, nullptr, m_topOffset > 0)) {
-			m_topOffset = 0;
+			ScrollToOffset(0);
 		}
 		if (ImGui::MenuItem("Scroll to bottom", nullptr, nullptr, m_topOffset < m_topOffsetMax)) {
-			m_topOffset = m_topOffsetMax;
+			ScrollToOffset(m_topOffsetMax);
 		}
 
 		ImGui::EndMenu();
 	}
+
+	ImGui::Separator();
+	ImGui::TextDisabled("Scroll: %.2f%%", (m_topOffset / (double)m_topOffsetMax) * 100.0);
 }
 
 void MemoryTab::Render()
@@ -232,6 +250,11 @@ void MemoryTab::Render()
 	const float itemHeight = 22.0f;
 	const int itemsPerPage = windowSize.y / itemHeight;
 
+	m_lineDetails.ensure_memory(itemsPerPage + 1);
+	while (m_lineDetails.len() < itemsPerPage + 1) {
+		m_lineDetails.add();
+	}
+
 	//NOTE: This assumes that pages are always aligned. Is that always the case though?
 	m_topOffsetMax = m_region.Size() - itemsPerPage * sizeof(uintptr_t);
 
@@ -240,6 +263,7 @@ void MemoryTab::Render()
 		if (mouseWheel != 0) {
 			// mouseWheel: negative = scroll down, positive = scroll up
 			m_topOffset += ((int)mouseWheel * -1) * 4 * sizeof(uintptr_t);
+			m_invalidated = true;
 		}
 	}
 
@@ -249,14 +273,17 @@ void MemoryTab::Render()
 	intptr_t virtualScrollMin = 0;
 	if (ImGui::VSliderScalar("", ImVec2(style.ScrollbarSize, windowSize.y), ImGuiDataType_S64, &virtualScrollPos, &m_topOffsetMax, &virtualScrollMin, "", ImGuiSliderFlags_NoInput)) {
 		m_topOffset = virtualScrollPos & ~0x7;
+		m_invalidated = true;
 	}
 	ImGui::SetCursorPos(startPos);
 
 	// Constrain scroll offset
 	if (m_topOffset < 0) {
 		m_topOffset = 0;
+		m_invalidated = true;
 	} else if (m_topOffset > m_topOffsetMax) {
 		m_topOffset = m_topOffsetMax;
+		m_invalidated = true;
 	}
 
 	for (int i = 0; i < itemsPerPage + 1; i++) {
@@ -350,7 +377,7 @@ void MemoryTab::Render()
 		ImGui::SameLine(column);
 
 		while (currentMemberSize < sizeof(uintptr_t)) {
-			uint16_t size = RenderMember(offset, currentMemberSize, displayOffset);
+			uint16_t size = RenderMember(offset, currentMemberSize, displayOffset, i);
 			if (size == 0) {
 				// On 32 bit, advancing 4 bytes goes to the next row (eg. every possible item)
 				// On 64 bit, advancing 4 bytes goes to the next possible item (eg. float, int32, etc)
@@ -371,6 +398,10 @@ void MemoryTab::Render()
 		ImGui::NewLine();
 
 		ImGui::PopID();
+	}
+
+	if (m_invalidated) {
+		m_invalidated = false;
 	}
 
 	ImGui::PopStyleVar();

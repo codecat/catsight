@@ -14,10 +14,18 @@ public:
 	uintptr_t m_baseSize = 0;
 
 private:
+	struct LineDetails
+	{
+		bool m_memoryExecutable = false;
+	};
+
+private:
+	bool m_invalidated = false;
 	intptr_t m_topOffset = 0;
 	intptr_t m_topOffsetMax = 0;
 
 	s2::string m_stringBuffer;
+	s2::list<LineDetails> m_lineDetails;
 
 public:
 	MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p);
@@ -31,7 +39,7 @@ public:
 	void ScrollTo(uintptr_t p);
 	void ScrollToOffset(uintptr_t offset);
 
-	uint16_t RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr_t displayOffset);
+	uint16_t RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr_t displayOffset, int lineIndex);
 
 	virtual s2::string GetLabel() override;
 

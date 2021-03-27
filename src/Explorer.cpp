@@ -184,6 +184,11 @@ void Explorer::RenderMenu()
 
 		ImGui::EndMenu();
 	}
+
+	if (ImGui::BeginMenu(ICON_FA_BUG " Debug")) {
+		ImGui::MenuItem("UI metrics", nullptr, &m_metricsVisible);
+		ImGui::EndMenu();
+	}
 }
 
 void Explorer::Render()
@@ -191,6 +196,10 @@ void Explorer::Render()
 	if (ImGui::BeginMainMenuBar()) {
 		RenderMenu();
 		ImGui::EndMainMenuBar();
+	}
+
+	if (m_metricsVisible) {
+		ImGui::ShowMetricsWindow(&m_metricsVisible);
 	}
 
 	for (size_t i = 0; i < m_inspectors.len(); i++) {

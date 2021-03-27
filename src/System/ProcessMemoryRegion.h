@@ -22,4 +22,9 @@ struct ProcessMemoryRegion
 
 	size_t Size();
 	bool Contains(uintptr_t p);
+
+	bool IsRead();
+	bool IsWrite();
+	bool IsExecute();
+	bool IsProtect();
 };

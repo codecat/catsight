@@ -13,9 +13,12 @@ public:
 
 private:
 	HelloImGui::RunnerParams m_params;
+
 	s2::list<ProcessInfo> m_processes;
 	UserInfo m_currentUser;
 	UserInfo m_effectiveUser;
+
+	bool m_metricsVisible = false;
 
 public:
 	s2::list<Inspector*> m_inspectors;

@@ -3,6 +3,7 @@
 	"files.associations": {
 		"string": "cpp",
 		"ranges": "cpp",
-		"cmath": "cpp"
+		"cmath": "cpp",
+		"typeinfo": "cpp"
 	}
 }
