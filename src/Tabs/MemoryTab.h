@@ -14,6 +14,9 @@ public:
 	uintptr_t m_baseSize = 0;
 
 private:
+	intptr_t m_topOffset = 0;
+	intptr_t m_topOffsetMax = 0;
+
 	intptr_t m_scrollToOffset = -1;
 	s2::string m_stringBuffer;
 
@@ -29,7 +32,7 @@ public:
 	void ScrollTo(uintptr_t p);
 	void ScrollToOffset(uintptr_t offset);
 
-	uint16_t RenderMember(uint16_t offset, uint16_t relativeOffset, intptr_t displayOffset);
+	uint16_t RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr_t displayOffset);
 
 	virtual s2::string GetLabel() override;
 

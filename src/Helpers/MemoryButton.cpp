@@ -9,6 +9,8 @@ void Helpers::MemoryButton(Inspector* inspector, uintptr_t p, const char* label,
 {
 	static s2::list<MemoryTab*> _memoryTabs;
 
+	ImGui::PushID((void*)p);
+
 	if (ImGui::Button(label)) {
 		_memoryTabs.clear();
 		for (auto tab : inspector->m_tabs) {
@@ -28,6 +30,7 @@ void Helpers::MemoryButton(Inspector* inspector, uintptr_t p, const char* label,
 	}
 
 	if (ImGui::BeginPopup("MemoryButtonPopup")) {
+		ImGui::TextDisabled(POINTER_FORMAT, p);
 		for (auto tab : _memoryTabs) {
 			ImGui::PushID(tab);
 			if (ImGui::MenuItem(tab->GetLabel())) {
@@ -44,4 +47,6 @@ void Helpers::MemoryButton(Inspector* inspector, uintptr_t p, const char* label,
 		}
 		ImGui::EndPopup();
 	}
+
+	ImGui::PopID();
 }

@@ -17,7 +17,7 @@ s2::string ProcessHandle::ReadCString(uintptr_t p)
 		len += perTime;
 		ret.ensure_memory(len);
 
-		ReadMemory(p + read, (void*)ret.c_str() + read, perTime);
+		ReadMemory(p + read, (void*)(ret.c_str() + read), perTime);
 
 		const char* pstr = ret.c_str();
 		for (size_t i = read; i < len; i++) {
