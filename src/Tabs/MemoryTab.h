@@ -21,6 +21,11 @@ protected:
 	intptr_t m_topOffsetMax = 0;
 	int m_itemsPerPage = 0;
 
+private:
+	bool m_ui_gotoPopupShow = false;
+	uintptr_t m_ui_gotoAddress = 0;
+	s2::string m_ui_gotoAddressString;
+
 public:
 	MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p);
 	virtual ~MemoryTab();

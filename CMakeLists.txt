@@ -37,6 +37,7 @@ hello_imgui_add_app(catsight
 
 	src/Helpers/DataButton.cpp
 	src/Helpers/CodeButton.cpp
+	src/Helpers/ImGuiString.cpp
 )
 
 include_directories(

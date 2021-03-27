@@ -1,6 +1,7 @@
 #include <Common.h>
 #include <Tabs/MemoryTab.h>
 #include <Inspector.h>
+#include <Helpers/ImGuiString.h>
 
 #include <hello_imgui.h>
 
@@ -65,6 +66,13 @@ void MemoryTab::RenderMenu()
 		if (ImGui::MenuItem("Scroll to bottom", nullptr, nullptr, m_topOffset < m_topOffsetMax)) {
 			ScrollToOffset(m_topOffsetMax);
 		}
+
+		ImGui::Separator();
+
+		if (ImGui::MenuItem("Go to..", "Ctrl+G")) {
+			m_ui_gotoPopupShow = true;
+		}
+
 		ImGui::EndMenu();
 	}
 
@@ -81,6 +89,41 @@ bool MemoryTab::RenderBegin()
 	if (!m_hasValidRegion) {
 		ImGui::TextUnformatted("No valid region");
 		return false;
+	}
+
+	if (m_ui_gotoPopupShow) {
+		ImGui::OpenPopup("GoToPopup");
+		m_ui_gotoPopupShow = false;
+	}
+	if (ImGui::BeginPopup("GoToPopup")) {
+		if (ImGui::IsWindowAppearing()) {
+			ImGui::SetKeyboardFocusHere();
+		}
+		bool actuallyGo = Helpers::InputText("Address", &m_ui_gotoAddressString, ImGuiInputTextFlags_EnterReturnsTrue);
+
+		uintptr_t gotoPointer = 0;
+		if (m_ui_gotoAddressString.len() > 0) {
+			//TODO: This could be parser as an expression instead (with numbers being hex w/o 0x prefix)
+			sscanf(m_ui_gotoAddressString, "%llx", &gotoPointer);
+
+			bool valid = m_inspector->m_processHandle->IsReadableMemory(gotoPointer);
+			if (!valid) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, .5f, .5f, 1));
+			}
+			ImGui::Text(POINTER_FORMAT, gotoPointer);
+			if (!valid) {
+				ImGui::PopStyleColor();
+			}
+		}
+
+		if (actuallyGo) {
+			printf("Goto: %s\n", m_ui_gotoAddressString.c_str());
+			GoTo(gotoPointer);
+			m_ui_gotoAddressString = "";
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
 	}
 
 	ImGui::BeginChild("Memory", ImVec2(), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
