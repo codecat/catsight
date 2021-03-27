@@ -102,6 +102,8 @@ void CodeTab::Render()
 			color = ImVec4(.5f, 1, 1, 1);
 		}
 
+		ImGui::PushStyleColor(ImGuiCol_Text, color);
+
 		// Show instruction bytes
 		size_t sizePrefix = instr.raw.prefix_count;
 		size_t sizeGroup1 = instr.raw.disp.size / 8;
@@ -138,15 +140,13 @@ void CodeTab::Render()
 			ZydisFormatterFormatInstruction(&m_formatter, &instr, instructionText, sizeof(instructionText), address);
 		}
 
-		ImGui::PushStyleColor(ImGuiCol_Text, color);
 		ImGui::Text("%s", instructionText);
 		ImGui::PopStyleColor();
 
 		ImGui::PopFont();
+		ImGui::SameLine();
 
 		if (valid) {
-			ImGui::SameLine();
-
 			for (uint8_t j = 0; j < instr.operand_count; j++) {
 				uintptr_t operandValue = 0;
 
@@ -162,8 +162,8 @@ void CodeTab::Render()
 				}
 
 				if (handle->IsReadableMemory(operandValue)) {
-					ImGui::TextDisabled(POINTER_FORMAT, operandValue);
-					ImGui::SameLine();
+					//ImGui::TextDisabled(POINTER_FORMAT, operandValue);
+					//ImGui::SameLine();
 
 					const char* str = DetectString(operandValue);
 					if (str != nullptr) {
@@ -174,20 +174,21 @@ void CodeTab::Render()
 					}
 
 					if (m_invalidated) {
+						line.m_memoryExecutable = false;
+
 						ProcessMemoryRegion region;
 						if (handle->GetMemoryRegion(operandValue, region)) {
-							if (region.IsExecute()) {
-								line.m_memoryExecutable = true;
-							}
+							line.m_memoryExecutable = region.IsExecute();
 						}
 					}
 
 					if (line.m_memoryExecutable) {
 						Helpers::CodeButton(m_inspector, operandValue);
 						ImGui::SameLine();
+					} else {
+						Helpers::DataButton(m_inspector, operandValue);
+						ImGui::SameLine();
 					}
-					Helpers::DataButton(m_inspector, operandValue);
-					ImGui::SameLine();
 				}
 			}
 		}

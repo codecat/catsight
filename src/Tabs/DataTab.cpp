@@ -104,6 +104,8 @@ uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr
 	// - The pointer is valid and can be read
 	if (relativeOffset == 0 && p != 0 && (p & 0xFFFFF0) != 0 && handle->IsReadableMemory(p)) {
 		if (lineAppearing) {
+			lineDetails.m_memoryExecutable = false;
+
 			ProcessMemoryRegion region;
 			if (handle->GetMemoryRegion(p, region)) {
 				lineDetails.m_memoryExecutable = region.IsExecute();

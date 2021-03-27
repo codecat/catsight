@@ -42,7 +42,7 @@ void Inspector::Render()
 {
 	auto windowTitle = s2::strprintf("%s (%d, %s)###Inspector_%s", m_title.c_str(), m_processInfo.pid, m_processInfo.user.username.c_str(), m_processInfo.filename.c_str());
 
-	ImGui::SetNextWindowSize(ImVec2(800, 800), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin(windowTitle, &m_isOpen, ImGuiWindowFlags_MenuBar)) {
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginMenu("Tabs")) {
