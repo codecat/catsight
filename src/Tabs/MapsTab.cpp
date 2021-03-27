@@ -3,7 +3,7 @@
 
 #include <Inspector.h>
 #include <Resources.h>
-#include <Helpers/MemoryButton.h>
+#include <Helpers/DataButton.h>
 
 #include <hello_imgui.h>
 
@@ -69,7 +69,7 @@ void MapsTab::Render()
 
 		ImGui::SameLine(350);
 
-		Helpers::MemoryButton(m_inspector, map.m_start, "Memory");
+		Helpers::DataButton(m_inspector, map.m_start);
 
 		ImGui::SameLine();
 		ImGui::TextUnformatted(map.m_path);

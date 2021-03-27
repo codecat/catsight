@@ -31,9 +31,11 @@ hello_imgui_add_app(catsight
 	src/Tab.cpp
 
 	src/Tabs/MapsTab.cpp
-	src/Tabs/MemoryTab.cpp
+	src/Tabs/DataTab.cpp
+	src/Tabs/CodeTab.cpp
 
-	src/Helpers/MemoryButton.cpp
+	src/Helpers/DataButton.cpp
+	src/Helpers/CodeButton.cpp
 )
 
 include_directories(

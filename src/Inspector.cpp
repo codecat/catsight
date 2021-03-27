@@ -4,7 +4,7 @@
 #include <Random.h>
 
 #include <Tabs/MapsTab.h>
-#include <Tabs/MemoryTab.h>
+#include <Tabs/DataTab.h>
 
 #include <hello_imgui.h>
 
@@ -18,7 +18,7 @@ Inspector::Inspector(const ProcessInfo& info)
 
 	auto regions = m_processHandle->GetMemoryRegions();
 	if (regions.len() > 0) {
-		m_tabs.add(new MemoryTab(this, "Memory", regions[0].m_start));
+		m_tabs.add(new DataTab(this, "Memory", regions[0].m_start));
 	}
 }
 
@@ -49,7 +49,7 @@ void Inspector::Render()
 				if (ImGui::MenuItem("New memory tab")) {
 					auto regions = m_processHandle->GetMemoryRegions();
 					if (regions.len() > 0) {
-						m_tabs.add(new MemoryTab(this, "Memory", regions[0].m_start));
+						m_tabs.add(new DataTab(this, "Memory", regions[0].m_start));
 					}
 				}
 				ImGui::EndMenu();

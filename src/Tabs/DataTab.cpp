@@ -1,13 +1,14 @@
 #include <Common.h>
-#include <Tabs/MemoryTab.h>
+#include <Tabs/DataTab.h>
 
 #include <Inspector.h>
 #include <Resources.h>
-#include <Helpers/MemoryButton.h>
+#include <Helpers/DataButton.h>
+#include <Helpers/CodeButton.h>
 
 #include <hello_imgui.h>
 
-MemoryTab::MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p)
+DataTab::DataTab(Inspector* inspector, const s2::string& name, uintptr_t p)
 	: Tab(inspector, name)
 {
 	m_hasValidRegion = m_inspector->m_processHandle->GetMemoryRegion(p, m_region);
@@ -18,11 +19,11 @@ MemoryTab::MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p)
 	}
 }
 
-MemoryTab::~MemoryTab()
+DataTab::~DataTab()
 {
 }
 
-void MemoryTab::SetRegion(const ProcessMemoryRegion& region, uintptr_t baseOffset, uintptr_t baseSize)
+void DataTab::SetRegion(const ProcessMemoryRegion& region, uintptr_t baseOffset, uintptr_t baseSize)
 {
 	m_hasValidRegion = true;
 	m_region = region;
@@ -35,7 +36,7 @@ void MemoryTab::SetRegion(const ProcessMemoryRegion& region, uintptr_t baseOffse
 	m_invalidated = true;
 }
 
-void MemoryTab::SetRegion(uintptr_t p, uintptr_t baseOffset, uintptr_t baseSize)
+void DataTab::SetRegion(uintptr_t p, uintptr_t baseOffset, uintptr_t baseSize)
 {
 	ProcessMemoryRegion region;
 	if (m_inspector->m_processHandle->GetMemoryRegion(p, region)) {
@@ -43,7 +44,7 @@ void MemoryTab::SetRegion(uintptr_t p, uintptr_t baseOffset, uintptr_t baseSize)
 	}
 }
 
-void MemoryTab::GoTo(uintptr_t p)
+void DataTab::GoTo(uintptr_t p)
 {
 	if (!m_region.Contains(p)) {
 		SetRegion(p);
@@ -51,12 +52,12 @@ void MemoryTab::GoTo(uintptr_t p)
 	ScrollTo(p);
 }
 
-void MemoryTab::ScrollTo(uintptr_t p)
+void DataTab::ScrollTo(uintptr_t p)
 {
 	ScrollToOffset(p - m_region.m_start);
 }
 
-void MemoryTab::ScrollToOffset(uintptr_t offset)
+void DataTab::ScrollToOffset(uintptr_t offset)
 {
 	if (offset < m_region.Size()) {
 		m_topOffset = offset;
@@ -64,7 +65,7 @@ void MemoryTab::ScrollToOffset(uintptr_t offset)
 	}
 }
 
-uint16_t MemoryTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr_t displayOffset, int lineIndex)
+uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr_t displayOffset, int lineIndex)
 {
 	assert(lineIndex < (int)m_lineDetails.len());
 	auto& lineDetails = m_lineDetails[lineIndex];
@@ -170,13 +171,13 @@ uint16_t MemoryTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intp
 		ImGui::SameLine();
 
 		if (lineDetails.m_memoryExecutable) {
-			ImGui::TextDisabled("(executable)");
+			Helpers::CodeButton(m_inspector, p);
 			ImGui::SameLine();
 		}
 
 		// We can't do anything else with arbitrary pointers besides show a memory button
 		if (pointerIsAligned) {
-			Helpers::MemoryButton(m_inspector, p, "Memory");
+			Helpers::DataButton(m_inspector, p);
 		}
 		return sizeof(uintptr_t);
 	}
@@ -196,12 +197,12 @@ uint16_t MemoryTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intp
 	return 0;
 }
 
-s2::string MemoryTab::GetLabel()
+s2::string DataTab::GetLabel()
 {
 	return s2::strprintf("%s (" POINTER_FORMAT ")###Memory", Tab::GetLabel().c_str(), m_region.m_start + m_baseOffset);
 }
 
-void MemoryTab::RenderMenu()
+void DataTab::RenderMenu()
 {
 	if (ImGui::BeginMenu("Memory")) {
 		if (ImGui::MenuItem("Reset base offset", nullptr, nullptr, m_baseOffset > 0)) {
@@ -227,8 +228,12 @@ void MemoryTab::RenderMenu()
 	ImGui::TextDisabled("Scroll: %.2f%%", (m_topOffset / (double)m_topOffsetMax) * 100.0);
 }
 
-void MemoryTab::Render()
+void DataTab::Render()
 {
+	if (ImGui::IsWindowAppearing()) {
+		m_invalidated = true;
+	}
+
 	if (!m_hasValidRegion) {
 		ImGui::TextUnformatted("No valid region");
 		return;

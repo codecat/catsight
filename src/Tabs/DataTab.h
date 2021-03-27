@@ -4,7 +4,7 @@
 #include <Tab.h>
 #include <System/ProcessMemoryRegion.h>
 
-class MemoryTab : public Tab
+class DataTab : public Tab
 {
 public:
 	bool m_hasValidRegion;
@@ -28,8 +28,8 @@ private:
 	s2::list<LineDetails> m_lineDetails;
 
 public:
-	MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p);
-	virtual ~MemoryTab();
+	DataTab(Inspector* inspector, const s2::string& name, uintptr_t p);
+	virtual ~DataTab();
 
 	void SetRegion(const ProcessMemoryRegion& region, uintptr_t baseOffset = 0, uintptr_t baseSize = 0);
 	void SetRegion(uintptr_t p, uintptr_t baseOffset = 0, uintptr_t baseSize = 0);
