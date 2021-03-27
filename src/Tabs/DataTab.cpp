@@ -49,26 +49,15 @@ uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr
 
 	//TODO: Allow plugins to detect stuff here
 
-	// It might be a string if:
-	// - The relative offset is 0
-	// - The pointer is not 0
-	// - The pointer is valid and can be read
-	// - There are at least 5 printable characters
-	if (relativeOffset == 0 && p != 0 && handle->IsReadableMemory(p)) {
-		for (int i = 0; i < 5; i++) {
-			char c = handle->Read<char>(p + i);
-			if (c < 0x20 || c > 0x7E) {
-				break;
-			}
-			if (i == 4) {
-				m_stringBuffer = handle->ReadCString(p);
-
-				ImGui::SameLine();
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, .5f, .5f, 1));
-				ImGui::Text("\"%s\"", m_stringBuffer.c_str());
-				ImGui::PopStyleColor();
-				return sizeof(uintptr_t);
-			}
+	// It might be a string:
+	if (relativeOffset == 0) {
+		const char* str = DetectString(p);
+		if (str != nullptr) {
+			ImGui::SameLine();
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
+			ImGui::Text("\"%s\"", str);
+			ImGui::PopStyleColor();
+			return sizeof(uintptr_t);
 		}
 	}
 
@@ -255,7 +244,7 @@ void DataTab::Render()
 		ImGui::PopStyleColor();
 		ImGui::PopFont();
 
-		column += 100;
+		column += 70;
 		ImGui::SameLine(column);
 
 		uintptr_t value = 0;

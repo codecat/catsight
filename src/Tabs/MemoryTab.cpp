@@ -144,5 +144,39 @@ void MemoryTab::RenderEnd()
 
 intptr_t MemoryTab::GetScrollAmount(int wheel)
 {
-	return (wheel * -1) * 4 * sizeof(uintptr_t);
+	return (wheel * -1) * 3 * sizeof(uintptr_t);
+}
+
+const char* MemoryTab::DetectString(uintptr_t p)
+{
+	auto handle = m_inspector->m_processHandle;
+
+	// It might be a string if:
+	// - The relative offset is 0
+	// - The pointer is not 0
+	// - The pointer is valid and can be read
+	// - There are at least 5 printable characters
+
+	if (p == 0) {
+		return nullptr;
+	}
+
+	if (!handle->IsReadableMemory(p)) {
+		return nullptr;
+	}
+
+	static s2::string _stringBuffer;
+
+	for (int i = 0; i < 5; i++) {
+		char c = handle->Read<char>(p + i);
+		if (c < 0x20 || c > 0x7E) {
+			break;
+		}
+		if (i == 4) {
+			_stringBuffer = handle->ReadCString(p);
+			return _stringBuffer.c_str();
+		}
+	}
+
+	return nullptr;
 }

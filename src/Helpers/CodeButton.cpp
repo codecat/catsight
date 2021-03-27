@@ -41,7 +41,7 @@ void Helpers::CodeButton(Inspector* inspector, uintptr_t p, const char* label, c
 			ImGui::PopID();
 		}
 		ImGui::Separator();
-		if (ImGui::MenuItem(ICON_FA_PLUS " New memory tab")) {
+		if (ImGui::MenuItem(ICON_FA_PLUS " New code tab")) {
 			auto newTab = new CodeTab(inspector, newTabName, p);
 			newTab->GoTo(p);
 			inspector->m_tabs.add(newTab);

@@ -14,8 +14,6 @@ private:
 	{
 		bool m_memoryExecutable = false;
 	};
-
-	s2::string m_stringBuffer;
 	s2::list<LineDetails> m_lineDetails;
 
 public:

@@ -25,6 +25,7 @@ int main()
 	}
 	((void**)testMem)[1] = (void*)&do_something;
 	((void**)testMem)[3] = (void*)&main;
+	((void**)testMem)[5] = (void*)"this is a constant string";
 #endif
 
 	Explorer::Instance = new Explorer();

@@ -13,6 +13,12 @@ private:
 	ZydisDecoder m_decoder;
 	ZydisFormatter m_formatter;
 
+	struct LineDetails
+	{
+		bool m_memoryExecutable = false;
+	};
+	s2::list<LineDetails> m_lineDetails;
+
 public:
 	CodeTab(Inspector* inspector, const s2::string& name, uintptr_t p);
 	virtual ~CodeTab();

@@ -39,4 +39,6 @@ public:
 
 protected:
 	virtual intptr_t GetScrollAmount(int wheel);
+
+	virtual const char* DetectString(uintptr_t p);
 };

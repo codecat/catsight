@@ -2,6 +2,8 @@
 #include <Tabs/CodeTab.h>
 #include <Inspector.h>
 #include <Resources.h>
+#include <Helpers/CodeButton.h>
+#include <Helpers/DataButton.h>
 
 #include <hello_imgui.h>
 
@@ -26,6 +28,13 @@ s2::string CodeTab::GetLabel()
 
 void CodeTab::Render()
 {
+	m_lineDetails.ensure_memory(m_itemsPerPage + 1);
+	while (m_lineDetails.len() < m_itemsPerPage + 1) {
+		m_lineDetails.add();
+	}
+
+	auto handle = m_inspector->m_processHandle;
+
 	size_t base = m_region.m_start;
 	size_t size = m_region.m_end - m_region.m_start;
 
@@ -35,6 +44,9 @@ void CodeTab::Render()
 		uintptr_t address = base + offset;
 
 		intptr_t displayOffset = (intptr_t)offset - (intptr_t)m_baseOffset;
+
+		assert((size_t)i < m_lineDetails.len());
+		auto& line = m_lineDetails[i];
 
 		ImGui::PushID((void*)address);
 		ImGui::PushFont(Resources::FontMono);
@@ -65,39 +77,129 @@ void CodeTab::Render()
 			ImGui::Text(format, absDisplayOffset);
 		}
 		ImGui::PopStyleColor();
-		ImGui::PopFont();
 
-		column += 100;
+		column += 70;
 		ImGui::SameLine(column);
 
 		uint8_t buffer[MAX_INSTRUCTION_SIZE];
-		size_t bufferSize = m_inspector->m_processHandle->ReadMemory(address, buffer, sizeof(buffer));
+		size_t bufferSize = handle->ReadMemory(address, buffer, sizeof(buffer));
 
+		// Decode instruction
 		ZydisDecodedInstruction instr;
-		if (ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&m_decoder, buffer, bufferSize, &instr))) {
-			char instructionText[256];
-			ZydisFormatterFormatInstruction(&m_formatter, &instr, instructionText, sizeof(instructionText), address);
+		bool valid = ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&m_decoder, buffer, bufferSize, &instr));
+		size_t instrSize = valid ? instr.length : 1;
+		bytesOffset += instrSize;
 
-			if (instr.opcode == 0x90 || instr.opcode == 0xCC) {
-				ImGui::TextDisabled("%s", instructionText);
-			} else {
-				ImGui::Text("%s", instructionText);
-			}
-			bytesOffset += instr.length;
-		} else {
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, .5f, .5f, 1));
-			ImGui::TextUnformatted("??");
-			ImGui::PopStyleColor();
-			bytesOffset++;
+		// Set instruction color
+		ImVec4 color = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+		if (instr.mnemonic == ZYDIS_MNEMONIC_NOP || instr.mnemonic == ZYDIS_MNEMONIC_INT3) {
+			color = ImVec4(.5f, .5f, .5f, 1);
+		} else if (instr.meta.category == ZYDIS_CATEGORY_CALL) {
+			color = ImVec4(1, .5f, .5f, 1);
+		} else if (instr.meta.category == ZYDIS_CATEGORY_RET) {
+			color = ImVec4(1, 1, .5f, 1);
+		} else if (instr.meta.branch_type != ZYDIS_BRANCH_TYPE_NONE) {
+			color = ImVec4(.5f, 1, 1, 1);
 		}
 
+		// Show instruction bytes
+		size_t sizePrefix = instr.raw.prefix_count;
+		size_t sizeGroup1 = instr.raw.disp.size / 8;
+		size_t sizeGroup2 = instr.raw.imm[0].size / 8;
+		size_t sizeGroup3 = instr.raw.imm[1].size / 8;
+		size_t sizeOpcode = instr.length - sizePrefix - sizeGroup1 - sizeGroup2 - sizeGroup3;
+
+		s2::string strBytes;
+		for (size_t j = 0; j < instrSize; j++) {
+			if (j > 0) {
+				if (j == sizePrefix) {
+					strBytes.append(':');
+				} else if (j == sizePrefix + sizeOpcode) {
+					strBytes.append(' ');
+				} else if (j == sizePrefix + sizeOpcode + sizeGroup1) {
+					strBytes.append(' ');
+				} else if (j == sizePrefix + sizeOpcode + sizeGroup1 + sizeGroup2) {
+					strBytes.append(' ');
+				} else if (j == sizePrefix + sizeOpcode + sizeGroup1 + sizeGroup2 + sizeGroup3) {
+					strBytes.append(' ');
+				}
+			}
+
+			strBytes.appendf("%02X", buffer[j]);
+		}
+		ImGui::Text("%s", strBytes.c_str());
+
+		column += 180;
+		ImGui::SameLine(column);
+
+		// Show formatted instruction text
+		char instructionText[256] = "??";
+		if (valid) {
+			ZydisFormatterFormatInstruction(&m_formatter, &instr, instructionText, sizeof(instructionText), address);
+		}
+
+		ImGui::PushStyleColor(ImGuiCol_Text, color);
+		ImGui::Text("%s", instructionText);
+		ImGui::PopStyleColor();
+
+		ImGui::PopFont();
+
+		if (valid) {
+			ImGui::SameLine();
+
+			for (uint8_t j = 0; j < instr.operand_count; j++) {
+				uintptr_t operandValue = 0;
+
+				auto& op = instr.operands[j];
+				if (op.type == ZYDIS_OPERAND_TYPE_IMMEDIATE) {
+					if (op.imm.is_relative) {
+						ZydisCalcAbsoluteAddress(&instr, &op, address, &operandValue);
+					} else {
+						operandValue = op.imm.value.u;
+					}
+				} else if (op.type == ZYDIS_OPERAND_TYPE_MEMORY) {
+					ZydisCalcAbsoluteAddress(&instr, &op, address, &operandValue);
+				}
+
+				if (handle->IsReadableMemory(operandValue)) {
+					ImGui::TextDisabled(POINTER_FORMAT, operandValue);
+					ImGui::SameLine();
+
+					const char* str = DetectString(operandValue);
+					if (str != nullptr) {
+						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
+						ImGui::Text("\"%s\"", str);
+						ImGui::PopStyleColor();
+						ImGui::SameLine();
+					}
+
+					if (m_invalidated) {
+						ProcessMemoryRegion region;
+						if (handle->GetMemoryRegion(operandValue, region)) {
+							if (region.IsExecute()) {
+								line.m_memoryExecutable = true;
+							}
+						}
+					}
+
+					if (line.m_memoryExecutable) {
+						Helpers::CodeButton(m_inspector, operandValue);
+						ImGui::SameLine();
+					}
+					Helpers::DataButton(m_inspector, operandValue);
+					ImGui::SameLine();
+				}
+			}
+		}
+
+		ImGui::NewLine();
 		ImGui::PopID();
 	}
 }
 
 intptr_t CodeTab::GetScrollAmount(int wheel)
 {
-	const int numInstructionsPerRotation = 4;
+	const int numInstructionsPerRotation = 3;
 	int numInstructions = numInstructionsPerRotation * abs(wheel);
 
 	uintptr_t address = m_region.m_start + m_topOffset;
@@ -120,13 +222,14 @@ intptr_t CodeTab::GetScrollAmount(int wheel)
 
 	} else {
 		// Scroll up
-		size_t bufferSize = (numInstructions + 3) * MAX_INSTRUCTION_SIZE;
-		uint8_t* buffer = (uint8_t*)alloca(bufferSize + 1 + MAX_INSTRUCTION_SIZE);
+		size_t rvaSize = (numInstructions + 3) * MAX_INSTRUCTION_SIZE;
+		size_t bufferSize = rvaSize + 1 + MAX_INSTRUCTION_SIZE;
+		uint8_t* buffer = (uint8_t*)alloca(rvaSize);
 
-		uintptr_t start = address - bufferSize;
-		m_inspector->m_processHandle->ReadMemory(start, buffer, bufferSize + 1 + MAX_INSTRUCTION_SIZE);
+		uintptr_t start = address - rvaSize;
+		m_inspector->m_processHandle->ReadMemory(start, buffer, bufferSize);
 
-		uintptr_t bufferOffset = DisassembleBack(buffer, bufferSize, bufferSize, numInstructions);
+		uintptr_t bufferOffset = DisassembleBack(buffer, bufferSize, rvaSize, numInstructions);
 		uintptr_t newOffset = start + bufferOffset;
 
 		return newOffset - address;
