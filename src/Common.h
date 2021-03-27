@@ -9,7 +9,9 @@
 #if defined(PLATFORM_64)
 #  define POINTER_FORMAT "%016llX"
 #  define OFFSET_FORMAT "%llX"
+#  define MAX_INSTRUCTION_SIZE 16
 #else
 #  define POINTER_FORMAT "%08X"
 #  define OFFSET_FORMAT "%X"
+#  define MAX_INSTRUCTION_SIZE 16
 #endif

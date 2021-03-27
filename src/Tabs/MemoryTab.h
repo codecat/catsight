@@ -13,6 +13,7 @@ public:
 protected:
 	float m_itemHeight = 22.0f;
 	uintptr_t m_addressMask = 0;
+	bool m_showScrollBar = true;
 
 protected:
 	bool m_invalidated = false;
@@ -35,4 +36,7 @@ public:
 	virtual void RenderMenu() override;
 	virtual bool RenderBegin() override;
 	virtual void RenderEnd() override;
+
+protected:
+	virtual intptr_t GetScrollAmount(int wheel);
 };

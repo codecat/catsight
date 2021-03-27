@@ -58,6 +58,18 @@ void MemoryTab::ScrollToOffset(uintptr_t offset)
 
 void MemoryTab::RenderMenu()
 {
+	if (ImGui::BeginMenu("Memory")) {
+		if (ImGui::MenuItem("Scroll to top", nullptr, nullptr, m_topOffset > 0)) {
+			ScrollToOffset(0);
+		}
+		if (ImGui::MenuItem("Scroll to bottom", nullptr, nullptr, m_topOffset < m_topOffsetMax)) {
+			ScrollToOffset(m_topOffsetMax);
+		}
+		ImGui::EndMenu();
+	}
+
+	ImGui::Separator();
+	ImGui::TextDisabled("Scroll: %.2f%%", (m_topOffset / (double)m_topOffsetMax) * 100.0);
 }
 
 bool MemoryTab::RenderBegin()
@@ -78,7 +90,11 @@ bool MemoryTab::RenderBegin()
 	auto windowSize = ImGui::GetWindowSize();
 	auto startPos = ImGui::GetCursorPos();
 
-	m_itemsPerPage = windowSize.y / m_itemHeight;
+	int itemsPerPage = windowSize.y / m_itemHeight;
+	if (m_itemsPerPage != itemsPerPage) {
+		m_itemsPerPage = itemsPerPage;
+		m_invalidated = true;
+	}
 
 	//NOTE: This assumes that pages are always aligned. Is that always the case though?
 	m_topOffsetMax = m_region.Size() - m_itemsPerPage * sizeof(uintptr_t);
@@ -87,20 +103,22 @@ bool MemoryTab::RenderBegin()
 		float mouseWheel = ImGui::GetIO().MouseWheel;
 		if (mouseWheel != 0) {
 			// mouseWheel: negative = scroll down, positive = scroll up
-			m_topOffset += ((int)mouseWheel * -1) * 4 * sizeof(uintptr_t);
+			m_topOffset += GetScrollAmount((int)mouseWheel);
 			m_invalidated = true;
 		}
 	}
 
 	// Virtual scrollbar
-	ImGui::SetCursorPos(ImVec2(startPos.x + windowSize.x - style.ScrollbarSize, startPos.y));
-	intptr_t virtualScrollPos = m_topOffset & ~0x7;
-	intptr_t virtualScrollMin = 0;
-	if (ImGui::VSliderScalar("", ImVec2(style.ScrollbarSize, windowSize.y), ImGuiDataType_S64, &virtualScrollPos, &m_topOffsetMax, &virtualScrollMin, "", ImGuiSliderFlags_NoInput)) {
-		m_topOffset = virtualScrollPos & ~0x7;
-		m_invalidated = true;
+	if (m_showScrollBar) {
+		ImGui::SetCursorPos(ImVec2(startPos.x + windowSize.x - style.ScrollbarSize, startPos.y));
+		intptr_t virtualScrollPos = m_topOffset & ~0x7;
+		intptr_t virtualScrollMin = 0;
+		if (ImGui::VSliderScalar("", ImVec2(style.ScrollbarSize, windowSize.y), ImGuiDataType_S64, &virtualScrollPos, &m_topOffsetMax, &virtualScrollMin, "", ImGuiSliderFlags_NoInput)) {
+			m_topOffset = virtualScrollPos & ~0x7;
+			m_invalidated = true;
+		}
+		ImGui::SetCursorPos(startPos);
 	}
-	ImGui::SetCursorPos(startPos);
 
 	// Constrain scroll offset
 	if (m_topOffset < 0) {
@@ -122,4 +140,9 @@ void MemoryTab::RenderEnd()
 
 	ImGui::PopStyleVar();
 	ImGui::EndChild();
+}
+
+intptr_t MemoryTab::GetScrollAmount(int wheel)
+{
+	return (wheel * -1) * 4 * sizeof(uintptr_t);
 }

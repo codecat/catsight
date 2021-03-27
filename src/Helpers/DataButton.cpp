@@ -11,7 +11,8 @@ void Helpers::DataButton(Inspector* inspector, uintptr_t p, const char* label, c
 
 	ImGui::PushID((void*)p);
 
-	if (ImGui::Button(label)) {
+	auto buttonLabel = s2::strprintf(ICON_FA_SERVER " %s", label);
+	if (ImGui::Button(buttonLabel)) {
 		_dataTabs.clear();
 		for (auto tab : inspector->m_tabs) {
 			auto dataTab = dynamic_cast<DataTab*>(tab);

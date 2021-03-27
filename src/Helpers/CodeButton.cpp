@@ -11,7 +11,8 @@ void Helpers::CodeButton(Inspector* inspector, uintptr_t p, const char* label, c
 
 	ImGui::PushID((void*)p);
 
-	if (ImGui::Button(label)) {
+	auto buttonLabel = s2::strprintf(ICON_FA_CODE " %s", label);
+	if (ImGui::Button(buttonLabel)) {
 		_codeTabs.clear();
 		for (auto tab : inspector->m_tabs) {
 			auto codeTab = dynamic_cast<CodeTab*>(tab);

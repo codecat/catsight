@@ -152,33 +152,22 @@ uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr
 
 s2::string DataTab::GetLabel()
 {
-	return s2::strprintf("%s (" POINTER_FORMAT ")###Memory", Tab::GetLabel().c_str(), m_region.m_start + m_baseOffset);
+	return s2::strprintf(ICON_FA_SERVER " %s (" POINTER_FORMAT ")###Memory", MemoryTab::GetLabel().c_str(), m_region.m_start + m_baseOffset);
 }
 
 void DataTab::RenderMenu()
 {
-	if (ImGui::BeginMenu("Memory")) {
+	if (ImGui::BeginMenu("Data")) {
 		if (ImGui::MenuItem("Reset base offset", nullptr, nullptr, m_baseOffset > 0)) {
 			m_baseOffset = 0;
 		}
 		if (ImGui::MenuItem("Reset base size", nullptr, nullptr, m_baseSize > 0)) {
 			m_baseSize = 0;
 		}
-
-		ImGui::Separator();
-
-		if (ImGui::MenuItem("Scroll to top", nullptr, nullptr, m_topOffset > 0)) {
-			ScrollToOffset(0);
-		}
-		if (ImGui::MenuItem("Scroll to bottom", nullptr, nullptr, m_topOffset < m_topOffsetMax)) {
-			ScrollToOffset(m_topOffsetMax);
-		}
-
 		ImGui::EndMenu();
 	}
 
-	ImGui::Separator();
-	ImGui::TextDisabled("Scroll: %.2f%%", (m_topOffset / (double)m_topOffsetMax) * 100.0);
+	MemoryTab::RenderMenu();
 }
 
 void DataTab::Render()
