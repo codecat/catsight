@@ -91,6 +91,9 @@ bool MemoryTab::RenderBegin()
 		return false;
 	}
 
+	if (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed('G')) {
+		m_ui_gotoPopupShow = true;
+	}
 	if (m_ui_gotoPopupShow) {
 		ImGui::OpenPopup("GoToPopup");
 		m_ui_gotoPopupShow = false;
