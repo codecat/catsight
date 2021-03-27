@@ -165,14 +165,6 @@ void CodeTab::Render()
 					//ImGui::TextDisabled(POINTER_FORMAT, operandValue);
 					//ImGui::SameLine();
 
-					const char* str = DetectString(operandValue);
-					if (str != nullptr) {
-						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
-						ImGui::Text("\"%s\"", str);
-						ImGui::PopStyleColor();
-						ImGui::SameLine();
-					}
-
 					if (m_invalidated) {
 						line.m_memoryExecutable = false;
 
@@ -186,6 +178,14 @@ void CodeTab::Render()
 						Helpers::CodeButton(m_inspector, operandValue);
 						ImGui::SameLine();
 					} else {
+						const char* str = DetectString(operandValue);
+						if (str != nullptr) {
+							ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
+							ImGui::Text("\"%s\"", str);
+							ImGui::PopStyleColor();
+							ImGui::SameLine();
+						}
+
 						Helpers::DataButton(m_inspector, operandValue);
 						ImGui::SameLine();
 					}
