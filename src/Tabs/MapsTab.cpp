@@ -4,6 +4,7 @@
 #include <Inspector.h>
 #include <Resources.h>
 #include <Helpers/DataButton.h>
+#include <Helpers/CodeButton.h>
 
 #include <hello_imgui.h>
 
@@ -38,28 +39,28 @@ void MapsTab::Render()
 		ImGui::PopStyleColor();
 
 		ImGui::SameLine(270);
-		if (map.m_flags & pmrf_Read) {
+		if (map.IsRead()) {
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(.5f, 1, .5f, 1));
 			ImGui::Text("R");
 			ImGui::PopStyleColor();
 		}
 
 		ImGui::SameLine(290);
-		if (map.m_flags & pmrf_Write) {
+		if (map.IsWrite()) {
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
 			ImGui::Text("W");
 			ImGui::PopStyleColor();
 		}
 
 		ImGui::SameLine(310);
-		if (map.m_flags & pmrf_Execute) {
+		if (map.IsExecute()) {
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, .5f, .5f, 1));
 			ImGui::Text("X");
 			ImGui::PopStyleColor();
 		}
 
 		ImGui::SameLine(330);
-		if (map.m_flags & pmrf_Protect) {
+		if (map.IsProtect()) {
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(.5f, .5f, 1, 1));
 			ImGui::Text("P");
 			ImGui::PopStyleColor();
@@ -69,6 +70,10 @@ void MapsTab::Render()
 
 		ImGui::SameLine(350);
 
+		if (map.IsExecute()) {
+			Helpers::CodeButton(m_inspector, map.m_start);
+			ImGui::SameLine();
+		}
 		Helpers::DataButton(m_inspector, map.m_start);
 
 		ImGui::SameLine();

@@ -173,7 +173,11 @@ const char* MemoryTab::DetectString(uintptr_t p)
 			break;
 		}
 		if (i == 4) {
-			_stringBuffer = handle->ReadCString(p);
+			_stringBuffer = handle->ReadCString(p)
+				.replace("\t", "\\t")
+				.replace("\r", "\\r")
+				.replace("\n", "\\n")
+			;
 			return _stringBuffer.c_str();
 		}
 	}
