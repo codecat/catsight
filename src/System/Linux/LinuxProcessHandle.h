@@ -14,6 +14,8 @@ public:
 	LinuxProcessHandle(const ProcessInfo& info);
 	virtual ~LinuxProcessHandle();
 
+	virtual bool IsOpen() override;
+
 	virtual size_t ReadMemory(uintptr_t p, void* buffer, size_t size) override;
 	virtual bool IsReadableMemory(uintptr_t p) override;
 

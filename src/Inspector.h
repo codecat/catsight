@@ -24,6 +24,9 @@ public:
 
 	const ProcessInfo& GetProcessInfo();
 
-	void RenderMemory(int index);
 	void Render();
+
+private:
+	void RenderMenu();
+	void RenderTabs();
 };

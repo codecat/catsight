@@ -40,14 +40,29 @@ LinuxProcessHandle::~LinuxProcessHandle()
 	}
 }
 
+bool LinuxProcessHandle::IsOpen()
+{
+	return m_fhMemory != nullptr;
+}
+
 size_t LinuxProcessHandle::ReadMemory(uintptr_t p, void* buffer, size_t size)
 {
+	assert(m_fhMemory != nullptr);
+	if (m_fhMemory == nullptr) {
+		return 0;
+	}
+
 	fseeko(m_fhMemory, (off_t)p, SEEK_SET);
 	return fread(buffer, 1, size, m_fhMemory);
 }
 
 bool LinuxProcessHandle::IsReadableMemory(uintptr_t p)
 {
+	assert(m_fhMemory != nullptr);
+	if (m_fhMemory == nullptr) {
+		return false;
+	}
+
 	uint8_t b;
 	return ReadMemory(p, &b, 1) == 1;
 }

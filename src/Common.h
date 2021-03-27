@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <cmath>
+#include <cassert>
 
 #include <s2list.h>
 #include <s2string.h>
