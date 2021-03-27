@@ -17,7 +17,6 @@ private:
 	intptr_t m_topOffset = 0;
 	intptr_t m_topOffsetMax = 0;
 
-	intptr_t m_scrollToOffset = -1;
 	s2::string m_stringBuffer;
 
 public:

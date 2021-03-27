@@ -55,7 +55,7 @@ void MemoryTab::ScrollTo(uintptr_t p)
 void MemoryTab::ScrollToOffset(uintptr_t offset)
 {
 	if (offset < m_region.Size()) {
-		m_scrollToOffset = offset;
+		m_topOffset = offset;
 	}
 }
 
@@ -371,11 +371,6 @@ void MemoryTab::Render()
 		ImGui::NewLine();
 
 		ImGui::PopID();
-	}
-
-	if (m_scrollToOffset != -1) {
-		m_topOffset = m_scrollToOffset;
-		m_scrollToOffset = -1;
 	}
 
 	ImGui::PopStyleVar();
