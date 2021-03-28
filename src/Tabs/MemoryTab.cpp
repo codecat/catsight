@@ -26,7 +26,7 @@ void MemoryTab::SetRegion(const ProcessMemoryRegion& region)
 void MemoryTab::SetRegion(uintptr_t p)
 {
 	ProcessMemoryRegion region;
-	if (m_inspector->m_processHandle->GetMemoryRegion(p, region)) {
+	if (m_inspector->GetMemoryRegion(p, region)) {
 		SetRegion(region);
 	} else {
 		m_hasValidRegion = false;

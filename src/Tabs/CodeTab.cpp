@@ -182,13 +182,13 @@ void CodeTab::Render()
 						line.m_pointsToExecutable = false;
 
 						ProcessMemoryRegion region;
-						if (handle->GetMemoryRegion(operandValue, region)) {
+						if (m_inspector->GetMemoryRegion(operandValue, region)) {
 							line.m_memoryExecutable = region.IsExecute();
 						}
 
 						if (!line.m_memoryExecutable) {
 							auto pp = handle->Read<uintptr_t>(operandValue);
-							if (handle->IsReadableMemory(pp) && handle->GetMemoryRegion(pp, region)) {
+							if (handle->IsReadableMemory(pp) && m_inspector->GetMemoryRegion(pp, region)) {
 								line.m_pointsToExecutable = region.IsExecute();
 							}
 						}

@@ -24,6 +24,4 @@ public:
 	}
 
 	s2::string ReadCString(uintptr_t p);
-
-	bool GetMemoryRegion(uintptr_t p, ProcessMemoryRegion& region);
 };

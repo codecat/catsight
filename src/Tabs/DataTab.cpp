@@ -107,12 +107,12 @@ uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr
 			line.m_pointsToExecutable = false;
 
 			ProcessMemoryRegion region;
-			if (handle->GetMemoryRegion(p, region)) {
+			if (m_inspector->GetMemoryRegion(p, region)) {
 				line.m_memoryExecutable = region.IsExecute();
 			}
 
 			auto pp = handle->Read<uintptr_t>(p);
-			if (handle->IsReadableMemory(pp) && handle->GetMemoryRegion(pp, region) && region.IsExecute()) {
+			if (handle->IsReadableMemory(pp) && m_inspector->GetMemoryRegion(pp, region) && region.IsExecute()) {
 				line.m_pointsToExecutable = true;
 				line.m_pointsToExecutableValue = pp;
 			}

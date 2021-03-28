@@ -16,9 +16,9 @@ Inspector::Inspector(const ProcessInfo& info)
 
 	m_tabs.add(new MapsTab(this, "Maps"));
 
-	auto regions = m_processHandle->GetMemoryRegions();
-	if (regions.len() > 0) {
-		m_tabs.add(new DataTab(this, "Data", regions[0].m_start));
+	m_processRegions = m_processHandle->GetMemoryRegions();
+	if (m_processRegions.len() > 0) {
+		m_tabs.add(new DataTab(this, "Data", m_processRegions[0].m_start));
 	}
 }
 
@@ -36,6 +36,17 @@ Inspector::~Inspector()
 const ProcessInfo& Inspector::GetProcessInfo()
 {
 	return m_processInfo;
+}
+
+bool Inspector::GetMemoryRegion(uintptr_t p, ProcessMemoryRegion& region)
+{
+	for (auto& r : m_processRegions) {
+		if (p >= r.m_start && p < r.m_end) {
+			region = r;
+			return true;
+		}
+	}
+	return false;
 }
 
 void Inspector::Render()
@@ -59,9 +70,8 @@ void Inspector::RenderMenu()
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu("Tabs")) {
 			if (ImGui::MenuItem("New data tab")) {
-				auto regions = m_processHandle->GetMemoryRegions();
-				if (regions.len() > 0) {
-					m_tabs.add(new DataTab(this, "Data", regions[0].m_start));
+				if (m_processRegions.len() > 0) {
+					m_tabs.add(new DataTab(this, "Data", m_processRegions[0].m_start));
 				}
 			}
 			ImGui::EndMenu();

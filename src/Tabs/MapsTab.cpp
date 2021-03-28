@@ -24,13 +24,14 @@ bool MapsTab::CanClose()
 
 void MapsTab::Render()
 {
+	//TODO: Maybe pick a better way to refresh regions for an inspector rather than opening the maps tab
 	if (ImGui::IsWindowAppearing()) {
-		m_maps = m_inspector->m_processHandle->GetMemoryRegions();
+		m_inspector->m_processRegions = m_inspector->m_processHandle->GetMemoryRegions();
 	}
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 0));
 
-	for (auto& map : m_maps) {
+	for (auto& map : m_inspector->m_processRegions) {
 		ImGui::PushID(map.m_start);
 		ImGui::PushFont(Resources::FontMono);
 

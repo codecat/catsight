@@ -15,6 +15,7 @@ public:
 
 	ProcessInfo m_processInfo;
 	ProcessHandle* m_processHandle = nullptr;
+	s2::list<ProcessMemoryRegion> m_processRegions;
 
 	s2::list<Tab*> m_tabs;
 
@@ -23,6 +24,8 @@ public:
 	~Inspector();
 
 	const ProcessInfo& GetProcessInfo();
+
+	bool GetMemoryRegion(uintptr_t p, ProcessMemoryRegion& region);
 
 	void Render();
 
