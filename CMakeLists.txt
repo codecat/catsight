@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.19)
 project(catsight LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 14)
 
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+add_subdirectory(external/glfw)
+
 set(ZYDIS_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(ZYDIS_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/zydis)
@@ -50,7 +53,7 @@ include_directories(
 target_link_libraries(catsight PUBLIC Zydis)
 
 if(WIN32)
-	add_definitions(-DPLATFORM_WINDOWS)
+	add_definitions(-DPLATFORM_WINDOWS -DWIN32_LEAN_AND_MEAN)
 elseif(UNIX)
 	add_definitions(-DPLATFORM_LINUX)
 endif()
