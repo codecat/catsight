@@ -154,7 +154,7 @@ uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr
 
 s2::string DataTab::GetLabel()
 {
-	return s2::strprintf(ICON_FA_DATABASE " %s (" POINTER_FORMAT ")###Memory", MemoryTab::GetLabel().c_str(), m_region.m_start + m_baseOffset);
+	return s2::strprintf(ICON_FA_DATABASE " %s (" POINTER_FORMAT ")###Data", MemoryTab::GetLabel().c_str(), m_region.m_start + m_baseOffset);
 }
 
 void DataTab::RenderMenu()

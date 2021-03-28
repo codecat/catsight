@@ -17,6 +17,8 @@ private:
 	{
 		bool m_memoryExecutable = false;
 		bool m_pointsToExecutable = false;
+		intptr_t m_jumpsLines = 0;
+		int m_depth = 0;
 	};
 	s2::list<LineDetails> m_lineDetails;
 

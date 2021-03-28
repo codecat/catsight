@@ -38,6 +38,8 @@ void CodeTab::Render()
 	size_t base = m_region.m_start;
 	size_t size = m_region.m_end - m_region.m_start;
 
+	int lineDepth = 0;
+
 	int bytesOffset = 0;
 	for (int i = 0; i < m_itemsPerPage + 1; i++) {
 		uintptr_t offset = m_topOffset + bytesOffset;
@@ -131,8 +133,13 @@ void CodeTab::Render()
 		}
 		ImGui::Text("%s", strBytes.c_str());
 
-		column += 180;
+		column += 200;
 		ImGui::SameLine(column);
+
+		// Remember position of instruction text column for branch line drawing later on
+		auto instructionPos = ImGui::GetCursorScreenPos();
+		instructionPos.x -= 5.5f;
+		instructionPos.y += m_itemHeight / 2 - 0.5f;
 
 		// Show formatted instruction text
 		char instructionText[256] = "??";
@@ -147,6 +154,11 @@ void CodeTab::Render()
 		ImGui::SameLine();
 
 		if (valid) {
+			if (m_invalidated) {
+				line.m_jumpsLines = 0;
+			}
+
+			// Go through all instruction operands and find stuff we want to display
 			for (uint8_t j = 0; j < instr.operand_count; j++) {
 				uintptr_t operandValue = 0;
 
@@ -180,6 +192,34 @@ void CodeTab::Render()
 								line.m_pointsToExecutable = region.IsExecute();
 							}
 						}
+
+						if (instr.meta.branch_type != ZYDIS_BRANCH_TYPE_NONE && instr.meta.category != ZYDIS_CATEGORY_CALL) {
+							intptr_t jumpOffsetBytes = operandValue - address;
+
+							//TODO: Support backwards jumps
+							if (jumpOffsetBytes > 0) {
+								uint8_t buffer[MAX_INSTRUCTION_SIZE];
+
+								line.m_jumpsLines = 0;
+								line.m_depth = ++lineDepth;
+								int ip = 0;
+
+								while (ip < jumpOffsetBytes) {
+									handle->ReadMemory(address + ip, buffer, sizeof(buffer));
+
+									ZydisDecodedInstruction instr;
+									if (!ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&m_decoder, buffer, sizeof(buffer), &instr))) {
+										break;
+									}
+
+									ip += instr.length;
+									line.m_jumpsLines++;
+									if (line.m_jumpsLines > m_itemsPerPage) {
+										break;
+									}
+								}
+							}
+						}
 					}
 
 					if (line.m_memoryExecutable) {
@@ -207,6 +247,17 @@ void CodeTab::Render()
 						ImGui::SameLine();
 					}
 				}
+			}
+
+			// Draw lines
+			if (line.m_jumpsLines != 0) {
+				auto draw = ImGui::GetWindowDrawList();
+				float offsetX = 5 * line.m_depth;
+				draw->PathLineTo(ImVec2(instructionPos.x, instructionPos.y));
+				draw->PathLineTo(ImVec2(instructionPos.x - offsetX, instructionPos.y));
+				draw->PathLineTo(ImVec2(instructionPos.x - offsetX, instructionPos.y + m_itemHeight * line.m_jumpsLines));
+				draw->PathLineTo(ImVec2(instructionPos.x, instructionPos.y + m_itemHeight * line.m_jumpsLines));
+				draw->PathStroke(ImGui::GetColorU32(color));
 			}
 		}
 

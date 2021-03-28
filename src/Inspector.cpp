@@ -18,7 +18,7 @@ Inspector::Inspector(const ProcessInfo& info)
 
 	auto regions = m_processHandle->GetMemoryRegions();
 	if (regions.len() > 0) {
-		m_tabs.add(new DataTab(this, "Memory", regions[0].m_start));
+		m_tabs.add(new DataTab(this, "Data", regions[0].m_start));
 	}
 }
 
@@ -58,10 +58,10 @@ void Inspector::RenderMenu()
 {
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu("Tabs")) {
-			if (ImGui::MenuItem("New memory tab")) {
+			if (ImGui::MenuItem("New data tab")) {
 				auto regions = m_processHandle->GetMemoryRegions();
 				if (regions.len() > 0) {
-					m_tabs.add(new DataTab(this, "Memory", regions[0].m_start));
+					m_tabs.add(new DataTab(this, "Data", regions[0].m_start));
 				}
 			}
 			ImGui::EndMenu();
