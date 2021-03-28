@@ -5,14 +5,13 @@
 
 #include <hello_imgui.h>
 
-void Helpers::DataButton(Inspector* inspector, uintptr_t p, const char* label, const char* newTabName)
+void Helpers::DataButton(Inspector* inspector, uintptr_t p)
 {
 	static s2::list<DataTab*> _dataTabs;
 
 	ImGui::PushID((void*)p);
 
-	auto buttonLabel = s2::strprintf(ICON_FA_SERVER " %s", label);
-	if (ImGui::Button(buttonLabel)) {
+	if (ImGui::Button(ICON_FA_DATABASE, ImVec2(30, 0))) {
 		_dataTabs.clear();
 		for (auto tab : inspector->m_tabs) {
 			auto dataTab = dynamic_cast<DataTab*>(tab);
@@ -22,12 +21,15 @@ void Helpers::DataButton(Inspector* inspector, uintptr_t p, const char* label, c
 		}
 
 		if (_dataTabs.len() == 0) {
-			auto newTab = new DataTab(inspector, newTabName, p);
+			auto newTab = new DataTab(inspector, "Data", p);
 			newTab->GoTo(p);
 			inspector->m_tabs.add(newTab);
 		} else {
 			ImGui::OpenPopup("DataButtonGroup");
 		}
+	}
+	if (ImGui::IsItemHovered()) {
+		ImGui::SetTooltip("Data pointer: " POINTER_FORMAT, p);
 	}
 
 	if (ImGui::BeginPopup("DataButtonGroup")) {
@@ -42,7 +44,7 @@ void Helpers::DataButton(Inspector* inspector, uintptr_t p, const char* label, c
 		}
 		ImGui::Separator();
 		if (ImGui::MenuItem(ICON_FA_PLUS " New data tab")) {
-			auto newTab = new DataTab(inspector, newTabName, p);
+			auto newTab = new DataTab(inspector, "Data", p);
 			newTab->GoTo(p);
 			inspector->m_tabs.add(newTab);
 		}

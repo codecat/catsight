@@ -259,13 +259,20 @@ bool MemoryTab::RenderBegin()
 		m_invalidated = true;
 	}
 
+	// Remember if we were invalidated at the beginning of the tab or not
+	m_wasInvalidatedAtBegin = m_invalidated;
+
 	return true;
 }
 
 void MemoryTab::RenderEnd()
 {
 	if (m_invalidated) {
-		m_invalidated = false;
+		// If we were not invalidated at the beginning but we are now, then we were invalidated in the middle of drawing the tab.
+		// In this case, we cannot guarantee a 100% valid tab, so we keep the tab invalidated for another frame.
+		if (m_wasInvalidatedAtBegin) {
+			m_invalidated = false;
+		}
 	}
 
 	ImGui::PopStyleVar();

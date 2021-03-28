@@ -17,7 +17,7 @@ protected:
 	bool m_showScrollBar = true;
 
 protected:
-	bool m_invalidated = false;
+	bool m_invalidated = false; // Can be used for particularly expensive operations mid-rendering
 	intptr_t m_topOffset = 0;
 	intptr_t m_topOffsetMax = 0;
 	int m_itemsPerPage = 0;
@@ -29,6 +29,8 @@ private:
 	bool m_ui_gotoPopupShow = false;
 	uintptr_t m_ui_gotoAddress = 0;
 	s2::string m_ui_gotoAddressString;
+
+	bool m_wasInvalidatedAtBegin = false;
 
 public:
 	MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p);

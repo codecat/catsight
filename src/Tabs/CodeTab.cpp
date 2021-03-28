@@ -167,16 +167,30 @@ void CodeTab::Render()
 
 					if (m_invalidated) {
 						line.m_memoryExecutable = false;
+						line.m_pointsToExecutable = false;
 
 						ProcessMemoryRegion region;
 						if (handle->GetMemoryRegion(operandValue, region)) {
 							line.m_memoryExecutable = region.IsExecute();
+						}
+
+						if (!line.m_memoryExecutable) {
+							auto pp = handle->Read<uintptr_t>(operandValue);
+							if (handle->IsReadableMemory(pp) && handle->GetMemoryRegion(pp, region)) {
+								line.m_pointsToExecutable = region.IsExecute();
+							}
 						}
 					}
 
 					if (line.m_memoryExecutable) {
 						Helpers::CodeButton(m_inspector, operandValue);
 						ImGui::SameLine();
+
+					} else if (line.m_pointsToExecutable) {
+						auto pp = handle->Read<uintptr_t>(operandValue);
+						Helpers::CodeButton(m_inspector, pp);
+						ImGui::SameLine();
+
 					} else {
 						const char* str = DetectString(operandValue);
 						if (str != nullptr) {
@@ -185,6 +199,9 @@ void CodeTab::Render()
 							ImGui::PopStyleColor();
 							ImGui::SameLine();
 						}
+
+						ImGui::TextDisabled(POINTER_FORMAT, handle->Read<uintptr_t>(operandValue));
+						ImGui::SameLine();
 
 						Helpers::DataButton(m_inspector, operandValue);
 						ImGui::SameLine();

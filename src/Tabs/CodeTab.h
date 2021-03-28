@@ -16,6 +16,7 @@ private:
 	struct LineDetails
 	{
 		bool m_memoryExecutable = false;
+		bool m_pointsToExecutable = false;
 	};
 	s2::list<LineDetails> m_lineDetails;
 

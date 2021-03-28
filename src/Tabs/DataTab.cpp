@@ -21,8 +21,7 @@ DataTab::~DataTab()
 uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr_t displayOffset, int lineIndex)
 {
 	assert(lineIndex < (int)m_lineDetails.len());
-	auto& lineDetails = m_lineDetails[lineIndex];
-	bool lineAppearing = m_invalidated;
+	auto& line = m_lineDetails[lineIndex];
 
 	offset += relativeOffset;
 	uintptr_t address = (uintptr_t)m_region.m_start + offset;
@@ -103,19 +102,31 @@ uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr
 	// - The pointer is aligned
 	// - The pointer is valid and can be read
 	if (relativeOffset == 0 && p != 0 && (p & 0xFFFFF0) != 0 && handle->IsReadableMemory(p)) {
-		if (lineAppearing) {
-			lineDetails.m_memoryExecutable = false;
+		if (m_invalidated) {
+			line.m_memoryExecutable = false;
+			line.m_pointsToExecutable = false;
 
 			ProcessMemoryRegion region;
 			if (handle->GetMemoryRegion(p, region)) {
-				lineDetails.m_memoryExecutable = region.IsExecute();
+				line.m_memoryExecutable = region.IsExecute();
+			}
+
+			auto pp = handle->Read<uintptr_t>(p);
+			if (handle->IsReadableMemory(pp) && handle->GetMemoryRegion(pp, region) && region.IsExecute()) {
+				line.m_pointsToExecutable = true;
+				line.m_pointsToExecutableValue = pp;
 			}
 		}
 
 		ImGui::SameLine();
 
-		if (lineDetails.m_memoryExecutable) {
+		if (line.m_memoryExecutable) {
 			Helpers::CodeButton(m_inspector, p);
+			ImGui::SameLine();
+		}
+
+		if (line.m_pointsToExecutable) {
+			Helpers::CodeButton(m_inspector, line.m_pointsToExecutableValue);
 			ImGui::SameLine();
 		}
 
@@ -143,7 +154,7 @@ uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr
 
 s2::string DataTab::GetLabel()
 {
-	return s2::strprintf(ICON_FA_SERVER " %s (" POINTER_FORMAT ")###Memory", MemoryTab::GetLabel().c_str(), m_region.m_start + m_baseOffset);
+	return s2::strprintf(ICON_FA_DATABASE " %s (" POINTER_FORMAT ")###Memory", MemoryTab::GetLabel().c_str(), m_region.m_start + m_baseOffset);
 }
 
 void DataTab::RenderMenu()
