@@ -7,5 +7,15 @@ Cross-platform process memory viewer inspired by x64dbg.
 * Browse and scroll through the memory of any process as an address table
 * Disassemble code in memory regions and jump between references
 
+## Screenshots
+### Data tab
+![](https://missdev.nl/catsight2.png)
+
+### Code tab
+![](https://missdev.nl/catsight1.png)
+
+### Maps tab
+![](https://missdev.nl/catsight3.png)
+
 ## What this isn't
 This is not a debugger. (At least, not yet.) It was not designed with debugging in mind, it is merely a process memory viewer.
