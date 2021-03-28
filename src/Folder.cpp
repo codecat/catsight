@@ -4,6 +4,8 @@
 #  include <sys/types.h>
 #  include <sys/stat.h>
 #  include <dirent.h>
+#elif defined(PLATFORM_WINDOWS)
+#  include <Windows.h>
 #endif
 
 FolderIndex::FolderIndex(const char* path, bool recursive)

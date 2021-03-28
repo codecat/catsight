@@ -1,6 +1,8 @@
 #include <Common.h>
 #include <System/Linux/LinuxProcessHandle.h>
 
+#if defined(PLATFORM_LINUX)
+
 struct LinuxMemoryMapInfo
 {
 	int mi_matches;
@@ -109,3 +111,5 @@ s2::list<ProcessMemoryRegion> LinuxProcessHandle::GetMemoryRegions()
 
 	return ret;
 }
+
+#endif
