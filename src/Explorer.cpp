@@ -201,9 +201,6 @@ void Explorer::RenderMenu()
 	}
 
 	if (ImGui::BeginMenu(ICON_FA_BUG " Debug")) {
-		if (ImGui::IsWindowAppearing()) {
-			printf("Test window appearing\n");
-		}
 		ImGui::MenuItem("UI metrics", nullptr, &m_metricsVisible);
 		ImGui::EndMenu();
 	}
