@@ -8,9 +8,9 @@
 #include <pwd.h>
 #include <unistd.h>
 
-bool System::IsUserRoot(const UserInfo& info)
+bool System::IsCurrentUserRoot()
 {
-	return (info.uid == 0);
+	return (GetCurrentUser().uid == 0);
 }
 
 UserInfo System::GetCurrentUser()
@@ -18,19 +18,6 @@ UserInfo System::GetCurrentUser()
 	UserInfo ret;
 
 	ret.uid = (int)getuid();
-	auto pwd = getpwuid((uid_t)ret.uid);
-	if (pwd != nullptr) {
-		ret.username = pwd->pw_name;
-	}
-
-	return ret;
-}
-
-UserInfo System::GetEffectiveUser()
-{
-	UserInfo ret;
-
-	ret.uid = (int)geteuid();
 	auto pwd = getpwuid((uid_t)ret.uid);
 	if (pwd != nullptr) {
 		ret.username = pwd->pw_name;

@@ -9,6 +9,7 @@ struct ProcessInfo
 	s2::string filename;
 	int pid = -1;
 	UserInfo user;
+	uint64_t startTime = 0;
 
 	bool operator==(const ProcessInfo& other) { return other.pid == pid; }
 };

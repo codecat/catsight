@@ -10,7 +10,6 @@ Explorer* Explorer::Instance = nullptr;
 void Explorer::Run()
 {
 	m_currentUser = System::GetCurrentUser();
-	m_effectiveUser = System::GetEffectiveUser();
 
 	m_params.callbacks.ShowGui = [this]() { Render(); };
 	m_params.callbacks.SetupImGuiStyle = [this]() { SetStyle(); };
@@ -133,12 +132,16 @@ Inspector* Explorer::GetInspector(int pid)
 
 void Explorer::RenderMenu()
 {
-	if (!System::IsUserRoot(m_effectiveUser)) {
+	if (!System::IsCurrentUserRoot()) {
 		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 0, 1));
 		ImGui::TextUnformatted(ICON_FA_EXCLAMATION_TRIANGLE);
 		ImGui::PopStyleColor();
 		if (ImGui::IsItemHovered()) {
+#if defined(PLATFORM_WINDOWS)
+			ImGui::SetTooltip("Not running as administrator!");
+#else
 			ImGui::SetTooltip("Not running as root user!");
+#endif
 		}
 	}
 	ImGui::TextDisabled(ICON_FA_USER " %s", m_currentUser.username.c_str());
@@ -151,18 +154,30 @@ void Explorer::RenderMenu()
 				m_processes.sort([](const void* pa, const void* pb) {
 					auto& a = *(ProcessInfo*)pa;
 					auto& b = *(ProcessInfo*)pb;
+
+					// If the process start time is available, sort by that
+					if (a.startTime != 0 && b.startTime != 0) {
+						if (a.startTime < b.startTime) {
+							return 1;
+						} else if (a.startTime > b.startTime) {
+							return -1;
+						}
+					}
+
+					// As a fallback, sort by process ID
 					if (a.pid < b.pid) {
 						return 1;
 					} else if (a.pid > b.pid) {
 						return -1;
 					}
+
 					return 0;
 				});
 			}
 
 			for (auto& proc : m_processes) {
 				const char* icon = "";
-				if (!System::IsUserRoot(proc.user)) {
+				if (m_currentUser == proc.user) {
 					icon = ICON_FA_USER " ";
 				}
 
@@ -186,6 +201,9 @@ void Explorer::RenderMenu()
 	}
 
 	if (ImGui::BeginMenu(ICON_FA_BUG " Debug")) {
+		if (ImGui::IsWindowAppearing()) {
+			printf("Test window appearing\n");
+		}
 		ImGui::MenuItem("UI metrics", nullptr, &m_metricsVisible);
 		ImGui::EndMenu();
 	}

@@ -77,7 +77,14 @@ void MapsTab::Render()
 		Helpers::DataButton(m_inspector, map.m_start);
 
 		ImGui::SameLine();
-		ImGui::TextUnformatted(map.m_path);
+
+		if (map.m_path.startswith(".")) {
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(.5f, .5f, .5f, 1));
+			ImGui::TextUnformatted(map.m_path);
+			ImGui::PopStyleColor();
+		} else {
+			ImGui::TextUnformatted(map.m_path);
+		}
 
 		ImGui::PopID();
 	}
