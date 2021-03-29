@@ -1,6 +1,8 @@
 #include <Common.h>
 #include <Tabs/MemoryTab.h>
 #include <Inspector.h>
+#include <Helpers/CodeButton.h>
+#include <Helpers/DataButton.h>
 #include <Helpers/ImGuiString.h>
 
 #include <hello_imgui.h>
@@ -111,7 +113,7 @@ void MemoryTab::ScrollToOffset(uintptr_t offset)
 
 void MemoryTab::RenderMenu()
 {
-	if (ImGui::BeginMenu("Memory")) {
+	if (ImGui::BeginMenu("View")) {
 		if (ImGui::MenuItem("Scroll to top", nullptr, nullptr, m_topOffset > 0)) {
 			ScrollToOffset(0);
 		}
@@ -145,6 +147,14 @@ void MemoryTab::RenderMenu()
 			m_ui_gotoPopupShow = true;
 		}
 
+		ImGui::EndMenu();
+	}
+
+	if (ImGui::BeginMenu("Resolve")) {
+		m_invalidated = ImGui::MenuItem("Floats", nullptr, &m_resolveFloats);
+#if defined(PLATFORM_64)
+		m_invalidated = ImGui::MenuItem("Pointers must align", nullptr, &m_resolvePointersIfAligned);
+#endif
 		ImGui::EndMenu();
 	}
 
@@ -284,7 +294,84 @@ intptr_t MemoryTab::GetScrollAmount(int wheel)
 	return (wheel * -1) * 3 * sizeof(uintptr_t);
 }
 
-const char* MemoryTab::DetectString(uintptr_t p)
+size_t MemoryTab::DetectAndRenderPointer(uintptr_t p, int depth)
+{
+	// NOTE: The order of which these are checked is important! We should test for the least common types first!
+
+	//TODO: Allow plugins to detect stuff here (and in DetectAndRenderType?)
+
+	auto handle = m_inspector->m_processHandle;
+	if (handle->IsReadableMemory(p)) {
+		uintptr_t value = handle->Read<uintptr_t>(p);
+		if (value == p) {
+			ImGui::TextDisabled("(recursive)");
+			ImGui::SameLine();
+			return sizeof(uintptr_t);
+		} else {
+			return DetectAndRenderType(value, sizeof(uintptr_t), depth);
+		}
+	}
+
+	return 0;
+}
+
+size_t MemoryTab::DetectAndRenderType(uintptr_t value, size_t limitedSize, int depth)
+{
+	auto handle = m_inspector->m_processHandle;
+
+	if (limitedSize >= sizeof(uintptr_t)) {
+		const char* str = DetectStringPointer(value);
+		if (str != nullptr) {
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
+			ImGui::Text("\"%s\"", str);
+			ImGui::PopStyleColor();
+			ImGui::SameLine();
+			return sizeof(uintptr_t);
+		}
+	}
+
+	if (m_resolveFloats && limitedSize >= sizeof(float)) {
+		float f = *(float*)&value;
+		if (IsValidFloat(f)) {
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
+			ImGui::Text("%f", f);
+			ImGui::PopStyleColor();
+			ImGui::SameLine();
+			return sizeof(float);
+		}
+	}
+
+	if (limitedSize >= sizeof(uintptr_t) && value != 0 && (value & 0xFFFFFF0) != 0 && handle->IsReadableMemory(value)) {
+		if (handle->IsExecutableMemory(value)) {
+			Helpers::CodeButton(m_inspector, value, depth);
+			ImGui::SameLine();
+			return sizeof(uintptr_t);
+		}
+
+#if defined(PLATFORM_64)
+		// 64 bit pointers are typically aligned to 16 bytes
+		bool pointerIsAligned = (value & 0xF) == 0;
+#else
+		// 32 bit targets don't care about alignment
+		bool pointerIsAligned = true;
+#endif
+
+		if (!m_resolvePointersIfAligned || pointerIsAligned) {
+			Helpers::DataButton(m_inspector, value, depth);
+			ImGui::SameLine();
+		}
+
+		if (depth < m_resolvePointerMaxDepth) {
+			DetectAndRenderPointer(value, depth + 1);
+		}
+
+		return sizeof(uintptr_t);
+	}
+
+	return 0;
+}
+
+const char* MemoryTab::DetectStringPointer(uintptr_t p)
 {
 	auto handle = m_inspector->m_processHandle;
 
@@ -320,4 +407,25 @@ const char* MemoryTab::DetectString(uintptr_t p)
 	}
 
 	return nullptr;
+}
+
+bool MemoryTab::IsValidFloat(float f)
+{
+	// The 32 bit integer must not be 0
+	uint32_t u32 = *(uint32_t*)&f;
+	if (u32 == 0) {
+		return false;
+	}
+
+	// The float must not be NaN or infinity
+	if (std::isnan(f) || std::isinf(f)) {
+		return false;
+	}
+
+	// The float must be in an acceptable range
+	if (fabsf(f) < 0.0001f || fabsf(f) > 100000.0f) {
+		return false;
+	}
+
+	return true;
 }

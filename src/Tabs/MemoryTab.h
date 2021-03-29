@@ -10,11 +10,15 @@ public:
 	bool m_hasValidRegion = false;
 	ProcessMemoryRegion m_region;
 
+	bool m_resolveFloats = true;
+	bool m_resolvePointersIfAligned = true;
+
 protected:
 	float m_itemHeight = 22.0f;
 	size_t m_maxHistoryItems = 25;
 	uintptr_t m_addressMask = 0;
 	bool m_showScrollBar = true;
+	int m_resolvePointerMaxDepth = 4;
 
 protected:
 	bool m_invalidated = false; // Can be used for particularly expensive operations mid-rendering
@@ -55,5 +59,10 @@ public:
 protected:
 	virtual intptr_t GetScrollAmount(int wheel);
 
-	virtual const char* DetectString(uintptr_t p);
+protected:
+	virtual size_t DetectAndRenderPointer(uintptr_t p, int depth = 0);
+	virtual size_t DetectAndRenderType(uintptr_t value, size_t limitedSize = sizeof(uintptr_t), int depth = 0);
+
+	const char* DetectStringPointer(uintptr_t p);
+	bool IsValidFloat(float f);
 };

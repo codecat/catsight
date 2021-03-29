@@ -26,128 +26,20 @@ uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr
 	offset += relativeOffset;
 	uintptr_t address = (uintptr_t)m_region.m_start + offset;
 
-	// Shorthand for process handle
-	auto handle = m_inspector->m_processHandle;
+	size_t ret = DetectAndRenderPointer(address);
 
-	// Prepare some types derived from the value at the address
-	uintptr_t p = handle->Read<uintptr_t>(address);
-	uint32_t u32 = handle->Read<uint32_t>(address);
-	float f = handle->Read<float>(address);
-
-#if defined(PLATFORM_64)
-	// 64 bit pointers are typically aligned to 16 bytes
-	bool pointerIsAligned = (p & 0xF) == 0;
-#else
-	// 32 bit targets don't care about alignment
-	bool pointerIsAligned = true;
-#endif
-
-	// NOTE: The order of which these are checked is important! We should test for the least common types first!
-
-	//TODO: Allow plugins to detect stuff here
-
-	// It might be a string:
-	if (relativeOffset == 0) {
-		const char* str = DetectString(p);
-		if (str != nullptr) {
-			ImGui::SameLine();
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
-			ImGui::Text("\"%s\"", str);
-			ImGui::PopStyleColor();
-			return sizeof(uintptr_t);
-		}
-	}
-
-	// It might be a wide string if:
-	// - The relative offset is 0
-	// - The pointer is not 0
-	// - The pointer is valid and can be read
-	// - There are at least 5 printable wide characters
-	//TODO: Fix this
-	/*
-	if (relativeOffset == 0 && p != 0 && handle->IsReadableMemory(p)) {
-		for (int i = 0; i < 5; i++) {
-			wchar_t c = handle->Read<wchar_t>(p + i);
-			if (c < 0x20 || c > 0x7E) {
-				break;
-			}
-			if (i == 4) {
-				ImGui::SameLine();
-				//TODO: Render wide string
-			}
-		}
-	}
-	*/
-
-	if (m_resolveFloats) {
-		// It might be a float if:
-		// - The 32 bit integer is not 0
-		// - The float is not NaN
-		// - It's larger than or equal to 0.0001f
-		// - It's smaller than or equal to 100000.0f
-		if (u32 != 0 && !std::isnan(f) && !std::isinf(f) && fabsf(f) >= 0.0001f && fabsf(f) <= 100000.0f) {
-			ImGui::SameLine();
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
-			ImGui::Text("%g", f);
-			ImGui::PopStyleColor();
-			return sizeof(float);
-		}
-	}
-
-	// It might be an arbitrary pointer if:
-	// - The relative offset is 0
-	// - The pointer is not 0
-	// - The pointer is aligned
-	// - The pointer is valid and can be read
-	if (relativeOffset == 0 && p != 0 && (p & 0xFFFFFF0) != 0 && handle->IsReadableMemory(p)) {
-		if (m_invalidated) {
-			line.m_memoryExecutable = false;
-			line.m_pointsToExecutable = false;
-
-			ProcessMemoryRegion region;
-			if (m_inspector->GetMemoryRegion(p, region)) {
-				line.m_memoryExecutable = region.IsExecute();
-			}
-
-			auto pp = handle->Read<uintptr_t>(p);
-			if (handle->IsReadableMemory(pp) && m_inspector->GetMemoryRegion(pp, region) && region.IsExecute()) {
-				line.m_pointsToExecutable = true;
-				line.m_pointsToExecutableValue = pp;
-			}
-		}
-
-		ImGui::SameLine();
-
-		if (line.m_memoryExecutable) {
-			Helpers::CodeButton(m_inspector, p);
-			ImGui::SameLine();
-		}
-
-		if (line.m_pointsToExecutable) {
-			Helpers::CodeButton(m_inspector, line.m_pointsToExecutableValue);
-			ImGui::SameLine();
-		}
-
-		// We can't do anything else with arbitrary pointers besides show a memory button
-		if (!m_resolvePointersIfAligned || pointerIsAligned) {
-			Helpers::DataButton(m_inspector, p);
-		}
-		return sizeof(uintptr_t);
-	}
-
-	//TODO: We can't display this at the end!
-	/*
-	if (renderFound && relativeOffset > 0) {
-		ImGui::SameLine();
+	if (ret > 0 && relativeOffset > 0) {
+		ImGui::SameLine(0, 2);
+		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, .5f, .5f, 1));
 		if (displayOffset < 0) {
-			ImGui::Text("$\\$f77-%X", abs(displayOffset));
+			ImGui::Text("-%X", abs(displayOffset));
 		} else {
-			ImGui::Text("$\\$f77+%X", displayOffset);
+			ImGui::Text("+%X", displayOffset);
 		}
+		ImGui::PopStyleColor();
 	}
-	*/
 
-	return 0;
+	return (uint16_t)ret;
 }
 
 s2::string DataTab::GetLabel()
@@ -164,13 +56,6 @@ void DataTab::RenderMenu()
 		if (ImGui::MenuItem("Reset base size", nullptr, nullptr, m_baseSize > 0)) {
 			m_baseSize = 0;
 		}
-
-		ImGui::Separator();
-
-		ImGui::MenuItem("Resolve floats", nullptr, &m_resolveFloats);
-#if defined(PLATFORM_64)
-		ImGui::MenuItem("Resolve pointers only if aligned", nullptr, &m_resolvePointersIfAligned);
-#endif
 
 		ImGui::EndMenu();
 	}

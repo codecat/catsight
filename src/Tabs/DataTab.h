@@ -9,9 +9,6 @@ public:
 	uintptr_t m_baseOffset = 0;
 	uintptr_t m_baseSize = 0;
 
-	bool m_resolveFloats = true;
-	bool m_resolvePointersIfAligned = true;
-
 private:
 	struct LineDetails
 	{
