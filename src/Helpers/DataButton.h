@@ -6,5 +6,5 @@ class Inspector;
 
 namespace Helpers
 {
-	void DataButton(Inspector* inspector, uintptr_t p);
+	void DataButton(Inspector* inspector, uintptr_t p, int depth = 0);
 }

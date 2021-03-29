@@ -6,5 +6,5 @@ class Inspector;
 
 namespace Helpers
 {
-	void CodeButton(Inspector* inspector, uintptr_t p);
+	void CodeButton(Inspector* inspector, uintptr_t p, int depth = 0);
 }

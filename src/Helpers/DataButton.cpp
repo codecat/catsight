@@ -5,11 +5,16 @@
 
 #include <hello_imgui.h>
 
-void Helpers::DataButton(Inspector* inspector, uintptr_t p)
+void Helpers::DataButton(Inspector* inspector, uintptr_t p, int depth)
 {
 	static s2::list<DataTab*> _dataTabs;
 
 	ImGui::PushID((void*)p);
+
+	float buttonHue = fmodf(0.5f + depth * 0.05f, 1.0f);
+	ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(buttonHue, 0.6f, 0.6f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(buttonHue, 0.7f, 0.7f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(buttonHue, 0.8f, 0.8f));
 
 	if (ImGui::Button(ICON_FA_DATABASE, ImVec2(30, 0))) {
 		_dataTabs.clear();
@@ -28,6 +33,9 @@ void Helpers::DataButton(Inspector* inspector, uintptr_t p)
 			ImGui::OpenPopup("DataButtonGroup");
 		}
 	}
+
+	ImGui::PopStyleColor(3);
+
 	if (ImGui::IsItemHovered()) {
 		ImGui::SetTooltip("Data pointer: " POINTER_FORMAT, p);
 	}

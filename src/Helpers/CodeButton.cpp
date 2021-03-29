@@ -5,11 +5,16 @@
 
 #include <hello_imgui.h>
 
-void Helpers::CodeButton(Inspector* inspector, uintptr_t p)
+void Helpers::CodeButton(Inspector* inspector, uintptr_t p, int depth)
 {
 	static s2::list<CodeTab*> _codeTabs;
 
 	ImGui::PushID((void*)p);
+
+	float buttonHue = fmodf(depth * 0.05f, 1.0f);
+	ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(buttonHue, 0.6f, 0.6f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(buttonHue, 0.7f, 0.7f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(buttonHue, 0.8f, 0.8f));
 
 	if (ImGui::Button(ICON_FA_CODE_BRANCH, ImVec2(30, 0))) {
 		_codeTabs.clear();
@@ -28,6 +33,9 @@ void Helpers::CodeButton(Inspector* inspector, uintptr_t p)
 			ImGui::OpenPopup("CodeButtonPopup");
 		}
 	}
+
+	ImGui::PopStyleColor(3);
+
 	if (ImGui::IsItemHovered()) {
 		ImGui::SetTooltip("Code pointer: " POINTER_FORMAT, p);
 	}
