@@ -51,6 +51,10 @@ include_directories(
 	src/
 )
 
+configure_file(assets/fonts/DroidSans.ttf fonts/DroidSans.ttf COPYONLY)
+configure_file(assets/fonts/DroidSans-Bold.ttf fonts/DroidSans-Bold.ttf COPYONLY)
+configure_file(assets/fonts/DroidSansMono.ttf fonts/DroidSansMono.ttf COPYONLY)
+
 target_link_libraries(catsight PUBLIC Zydis)
 
 if(WIN32)
