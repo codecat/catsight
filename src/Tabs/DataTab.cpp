@@ -36,13 +36,11 @@ uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr
 
 #if defined(PLATFORM_64)
 	// 64 bit pointers are typically aligned to 16 bytes
-	//TODO: Make an option to ignore this check
 	bool pointerIsAligned = (p & 0xF) == 0;
 #else
 	// 32 bit targets don't care about alignment
 	bool pointerIsAligned = true;
 #endif
-	const bool resolveFloats = false; //TODO: Option for this
 
 	// NOTE: The order of which these are checked is important! We should test for the least common types first!
 
@@ -81,7 +79,7 @@ uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr
 	}
 	*/
 
-	if (resolveFloats) {
+	if (m_resolveFloats) {
 		// It might be a float if:
 		// - The 32 bit integer is not 0
 		// - The float is not NaN
@@ -101,7 +99,7 @@ uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr
 	// - The pointer is not 0
 	// - The pointer is aligned
 	// - The pointer is valid and can be read
-	if (relativeOffset == 0 && p != 0 && (p & 0xFFFFF0) != 0 && handle->IsReadableMemory(p)) {
+	if (relativeOffset == 0 && p != 0 && (p & 0xFFFFFF0) != 0 && handle->IsReadableMemory(p)) {
 		if (m_invalidated) {
 			line.m_memoryExecutable = false;
 			line.m_pointsToExecutable = false;
@@ -131,7 +129,7 @@ uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr
 		}
 
 		// We can't do anything else with arbitrary pointers besides show a memory button
-		if (pointerIsAligned) {
+		if (!m_resolvePointersIfAligned || pointerIsAligned) {
 			Helpers::DataButton(m_inspector, p);
 		}
 		return sizeof(uintptr_t);
@@ -166,6 +164,14 @@ void DataTab::RenderMenu()
 		if (ImGui::MenuItem("Reset base size", nullptr, nullptr, m_baseSize > 0)) {
 			m_baseSize = 0;
 		}
+
+		ImGui::Separator();
+
+		ImGui::MenuItem("Resolve floats", nullptr, &m_resolveFloats);
+#if defined(PLATFORM_64)
+		ImGui::MenuItem("Resolve pointers only if aligned", nullptr, &m_resolvePointersIfAligned);
+#endif
+
 		ImGui::EndMenu();
 	}
 
