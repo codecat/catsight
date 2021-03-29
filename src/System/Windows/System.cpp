@@ -154,4 +154,9 @@ ProcessHandle* System::OpenProcessHandle(const ProcessInfo& info)
 	return new WindowsProcessHandle(info);
 }
 
+void System::Sleep(int ms)
+{
+	::Sleep(ms);
+}
+
 #endif

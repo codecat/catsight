@@ -108,4 +108,9 @@ ProcessHandle* System::OpenProcessHandle(const ProcessInfo& info)
 	return new LinuxProcessHandle(info);
 }
 
+void System::Sleep(int ms)
+{
+	usleep(ms * 1000);
+}
+
 #endif

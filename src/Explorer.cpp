@@ -208,6 +208,10 @@ void Explorer::RenderMenu()
 
 void Explorer::Render()
 {
+	for (auto inspector : m_inspectors) {
+		inspector->Update();
+	}
+
 	if (ImGui::BeginMainMenuBar()) {
 		RenderMenu();
 		ImGui::EndMainMenuBar();

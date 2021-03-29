@@ -65,6 +65,11 @@ void Inspector::Render()
 	ImGui::End();
 }
 
+void Inspector::Update()
+{
+	m_tasks.Update();
+}
+
 void Inspector::RenderMenu()
 {
 	if (ImGui::BeginMenuBar()) {

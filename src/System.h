@@ -13,4 +13,6 @@ namespace System
 	s2::list<ProcessInfo> GetProcesses();
 
 	ProcessHandle* OpenProcessHandle(const ProcessInfo& info);
+
+	void Sleep(int ms);
 }

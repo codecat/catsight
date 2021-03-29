@@ -30,6 +30,10 @@ hello_imgui_add_app(catsight
 	src/Random.cpp
 	src/Folder.cpp
 
+	src/Tasks/Tasks.cpp
+	src/Tasks/TaskWorker.cpp
+	src/Tasks/Task.cpp
+
 	src/Explorer.cpp
 	src/Inspector.cpp
 	src/Tab.cpp

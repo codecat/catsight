@@ -3,6 +3,7 @@
 #include <Common.h>
 #include <System/ProcessInfo.h>
 #include <System/ProcessHandle.h>
+#include <Tasks/Tasks.h>
 #include <Tab.h>
 
 class Inspector
@@ -12,6 +13,8 @@ private:
 
 public:
 	bool m_isOpen = true;
+
+	Tasks m_tasks;
 
 	ProcessInfo m_processInfo;
 	ProcessHandle* m_processHandle = nullptr;
@@ -28,6 +31,7 @@ public:
 	bool GetMemoryRegion(uintptr_t p, ProcessMemoryRegion& region);
 
 	void Render();
+	void Update();
 
 private:
 	void RenderMenu();

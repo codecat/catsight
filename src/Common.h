@@ -6,6 +6,7 @@
 #include <s2list.h>
 #include <s2string.h>
 #include <s2file.h>
+#include <s2func.h>
 
 #if defined(PLATFORM_64)
 #  define POINTER_FORMAT "%016llX"
