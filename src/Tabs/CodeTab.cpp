@@ -293,7 +293,7 @@ intptr_t CodeTab::GetScrollAmount(int wheel)
 		// Scroll up
 		size_t rvaSize = (numInstructions + 3) * MAX_INSTRUCTION_SIZE;
 		size_t bufferSize = rvaSize + 1 + MAX_INSTRUCTION_SIZE;
-		uint8_t* buffer = (uint8_t*)alloca(rvaSize);
+		uint8_t* buffer = (uint8_t*)alloca(bufferSize);
 
 		uintptr_t start = address - rvaSize;
 		m_inspector->m_processHandle->ReadMemory(start, buffer, bufferSize);
