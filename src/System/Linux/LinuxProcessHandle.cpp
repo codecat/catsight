@@ -69,43 +69,77 @@ bool LinuxProcessHandle::IsReadableMemory(uintptr_t p)
 	return ReadMemory(p, &b, 1) == 1;
 }
 
+bool LinuxProcessHandle::IsExecutableMemory(uintptr_t p)
+{
+	FILE* fh = fopen(s2::strprintf("/proc/%d/maps", m_pid), "rb");
+	while (!feof(fh)) {
+		void* base;
+		void* end;
+
+		fscanf(fh, "%p-%p ", &base, &end);
+		if (p >= (uintptr_t)base && p < (uintptr_t)end) {
+			fseek(fh, 2, SEEK_CUR);
+			char c = fgetc(fh);
+			fclose(fh);
+			return (c != '-');
+		}
+
+		while (!feof(fh) && fgetc(fh) != '\n');
+	}
+	fclose(fh);
+	return false;
+}
+
 s2::list<ProcessMemoryRegion> LinuxProcessHandle::GetMemoryRegions()
 {
 	s2::list<ProcessMemoryRegion> ret;
 
 	FILE* fh = fopen(s2::strprintf("/proc/%d/maps", m_pid), "rb");
 	while (!feof(fh)) {
-		char line[512];
-		if (fgets(line, 512, fh) == nullptr) {
-			break;
-		}
-
-		line[strlen(line) - 1] = '\0';
-
 		LinuxMemoryMapInfo mi;
-		mi.mi_matches = sscanf(line, "%p-%p %c%c%c%c %p %02hhx:%02hhx %lu %s",
+		mi.mi_matches = fscanf(fh, "%p-%p %c%c%c%c %p %02hhx:%02hhx %lu",
 			&mi.mi_base, &mi.mi_end,
 			&mi.mi_flags.read, &mi.mi_flags.write, &mi.mi_flags.execute, &mi.mi_flags.protection,
 			&mi.mi_offset,
 			&mi.mi_device.major, &mi.mi_device.minor,
-			&mi.mi_inode,
-			mi.mi_path
+			&mi.mi_inode
 		);
 
-		if (mi.mi_matches >= 10) {
-			auto& region = ret.add();
-			region.m_start = (uintptr_t)mi.mi_base;
-			region.m_end = (uintptr_t)mi.mi_end;
-
-			if (mi.mi_flags.read != '-') { region.m_flags |= pmrf_Read; }
-			if (mi.mi_flags.write != '-') { region.m_flags |= pmrf_Write; }
-			if (mi.mi_flags.execute != '-') { region.m_flags |= pmrf_Execute; }
-			if (mi.mi_flags.protection != '-') { region.m_flags |= pmrf_Protect; }
-
-			if (mi.mi_matches == 11) {
-				region.m_path = mi.mi_path;
+		for (int i = 0; i < 1024; i++) {
+			if (feof(fh)) {
+				mi.mi_path[i] = '\0';
+				break;
 			}
+
+			char c;
+			if (i == 0) {
+				do {
+					c = fgetc(fh);
+				} while (c == ' ');
+			} else {
+				c = fgetc(fh);
+			}
+			if (c == '\n') {
+				mi.mi_path[i] = '\0';
+				break;
+			}
+			mi.mi_path[i] = c;
 		}
+
+		if (mi.mi_matches < 10) {
+			continue;
+		}
+
+		auto& region = ret.add();
+		region.m_start = (uintptr_t)mi.mi_base;
+		region.m_end = (uintptr_t)mi.mi_end;
+
+		if (mi.mi_flags.read != '-') { region.m_flags |= pmrf_Read; }
+		if (mi.mi_flags.write != '-') { region.m_flags |= pmrf_Write; }
+		if (mi.mi_flags.execute != '-') { region.m_flags |= pmrf_Execute; }
+		if (mi.mi_flags.protection != '-') { region.m_flags |= pmrf_Protect; }
+
+		region.m_path = mi.mi_path;
 	}
 	fclose(fh);
 

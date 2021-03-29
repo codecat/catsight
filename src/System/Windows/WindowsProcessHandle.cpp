@@ -51,6 +51,21 @@ bool WindowsProcessHandle::IsReadableMemory(uintptr_t p)
 	return ReadMemory(p, &b, 1) == 1;
 }
 
+bool WindowsProcessHandle::IsExecutableMemory(uintptr_t p)
+{
+	asesrt(m_proc != nullptr);
+	if (m_proc == nullptr) {
+		return false;
+	}
+
+	MEMORY_BASIC_INFORMATION mbi;
+	if (VirtualQueryEx(m_proc, (LPCVOID)p, &mbi, sizeof(mbi)) == 0) {
+		return false;
+	}
+
+	return (mbi.Protect == PAGE_EXECUTE_READ || mbi.Protect == PAGE_EXECUTE_READWRITE || mbi.Protect == PAGE_EXECUTE_WRITECOPY);
+}
+
 s2::list<ProcessMemoryRegion> WindowsProcessHandle::GetMemoryRegions()
 {
 	s2::list<ProcessMemoryRegion> ret;
@@ -112,8 +127,6 @@ s2::list<ProcessMemoryRegion> WindowsProcessHandle::GetMemoryRegions()
 	uintptr_t pageStart = 0;
 	while (true) {
 		MEMORY_BASIC_INFORMATION mbi;
-		memset(&mbi, 0, sizeof(mbi));
-
 		if (VirtualQueryEx(m_proc, (LPCVOID)pageStart, &mbi, sizeof(mbi)) == 0) {
 			break;
 		}

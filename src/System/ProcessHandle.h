@@ -14,6 +14,7 @@ public:
 
 	virtual size_t ReadMemory(uintptr_t p, void* buffer, size_t size) = 0;
 	virtual bool IsReadableMemory(uintptr_t p) = 0;
+	virtual bool IsExecutableMemory(uintptr_t p) = 0;
 
 	template<typename T>
 	T Read(uintptr_t p)
