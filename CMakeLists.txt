@@ -51,10 +51,6 @@ include_directories(
 	src/
 )
 
-configure_file(assets/fonts/DroidSans.ttf fonts/DroidSans.ttf COPYONLY)
-configure_file(assets/fonts/DroidSans-Bold.ttf fonts/DroidSans-Bold.ttf COPYONLY)
-configure_file(assets/fonts/DroidSansMono.ttf fonts/DroidSansMono.ttf COPYONLY)
-
 target_link_libraries(catsight PUBLIC Zydis)
 
 if(WIN32)
@@ -68,3 +64,7 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 else()
 	add_definitions(-DPLATFORM_32)
 endif()
+
+configure_file(assets/fonts/DroidSans.ttf fonts/DroidSans.ttf COPYONLY)
+configure_file(assets/fonts/DroidSans-Bold.ttf fonts/DroidSans-Bold.ttf COPYONLY)
+configure_file(assets/fonts/DroidSansMono.ttf fonts/DroidSansMono.ttf COPYONLY)
