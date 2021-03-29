@@ -2,10 +2,14 @@
 #include <Tabs/CodeTab.h>
 #include <Inspector.h>
 #include <Resources.h>
+#include <Helpers/MemoryValidator.h>
 #include <Helpers/CodeButton.h>
 #include <Helpers/DataButton.h>
+#include <Tabs/StringsTab.h>
 
 #include <hello_imgui.h>
+
+#include <chrono>
 
 CodeTab::CodeTab(Inspector* inspector, const s2::string& name, uintptr_t p)
 	: MemoryTab(inspector, name, p)
@@ -24,6 +28,77 @@ CodeTab::~CodeTab()
 s2::string CodeTab::GetLabel()
 {
 	return s2::strprintf(ICON_FA_CODE " %s (" POINTER_FORMAT ")###Code", MemoryTab::GetLabel().c_str(), m_region.m_start + m_baseOffset);
+}
+
+void CodeTab::RenderMenu()
+{
+	MemoryTab::RenderMenu();
+
+	if (ImGui::BeginMenu("Find")) {
+		if (ImGui::MenuItem("All referenced strings")) {
+			auto handle = m_inspector->m_processHandle;
+			auto region = m_region;
+			auto decoder = m_decoder;
+
+			auto stringsTab = new StringsTab(m_inspector, "Strings");
+			m_inspector->m_tabs.add(stringsTab);
+
+			stringsTab->m_task = m_inspector->m_tasks.Run([handle, region, decoder, stringsTab](Task* task) {
+				uintptr_t offset = 0;
+				uint8_t buffer[MAX_INSTRUCTION_SIZE];
+
+				auto tmStart = std::chrono::high_resolution_clock::now();
+
+				while (offset < region.Size()) {
+					uintptr_t address = region.m_start + offset;
+
+					size_t bytesRead = handle->ReadMemory(address, buffer, sizeof(buffer));
+					if (bytesRead == 0) {
+						break;
+					}
+
+					ZydisDecodedInstruction instr;
+					if (!ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&decoder, buffer, sizeof(buffer), &instr))) {
+						offset++;
+						continue;
+					}
+
+					// Go through all instruction operands and find valid pointers
+					for (uint8_t j = 0; j < instr.operand_count; j++) {
+						uintptr_t operandValue = 0;
+
+						auto& op = instr.operands[j];
+						if (op.type == ZYDIS_OPERAND_TYPE_IMMEDIATE) {
+							if (op.imm.is_relative) {
+								ZydisCalcAbsoluteAddress(&instr, &op, address, &operandValue);
+							} else {
+								operandValue = op.imm.value.u;
+							}
+						} else if (op.type == ZYDIS_OPERAND_TYPE_MEMORY) {
+							ZydisCalcAbsoluteAddress(&instr, &op, address, &operandValue);
+						}
+
+						if (handle->IsReadableMemory(operandValue)) {
+							if (MemoryValidator::String(handle, operandValue)) {
+								auto& newResult = stringsTab->m_results.add();
+								newResult.m_code = address;
+								newResult.m_string = operandValue;
+							}
+						}
+					}
+
+					offset += instr.length;
+					task->m_progress = (float)(offset / (double)region.Size());
+				}
+
+				auto tmDuration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tmStart).count();
+				printf("Done searching referenced strings in %.02f milliseconds\n", tmDuration / 1000.0f);
+			})->Then([stringsTab](Task*) {
+				stringsTab->SearchFinished();
+			});
+		}
+		ImGui::EndMenu();
+	}
 }
 
 void CodeTab::Render()

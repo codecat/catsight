@@ -49,6 +49,8 @@ s2::string DataTab::GetLabel()
 
 void DataTab::RenderMenu()
 {
+	MemoryTab::RenderMenu();
+
 	if (ImGui::BeginMenu("Data")) {
 		if (ImGui::MenuItem("Reset base offset", nullptr, nullptr, m_baseOffset > 0)) {
 			m_baseOffset = 0;
@@ -59,8 +61,6 @@ void DataTab::RenderMenu()
 
 		ImGui::EndMenu();
 	}
-
-	MemoryTab::RenderMenu();
 }
 
 void DataTab::Render()

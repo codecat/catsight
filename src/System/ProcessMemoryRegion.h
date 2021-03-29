@@ -20,11 +20,11 @@ struct ProcessMemoryRegion
 
 	s2::string m_path;
 
-	size_t Size();
-	bool Contains(uintptr_t p);
+	size_t Size() const;
+	bool Contains(uintptr_t p) const;
 
-	bool IsRead();
-	bool IsWrite();
-	bool IsExecute();
-	bool IsProtect();
+	bool IsRead() const;
+	bool IsWrite() const;
+	bool IsExecute() const;
+	bool IsProtect() const;
 };

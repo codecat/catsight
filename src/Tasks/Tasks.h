@@ -22,7 +22,8 @@ public:
 	~Tasks();
 
 	TaskWorker* AddWorker();
-	TaskWorker* GetAvailableWorker();
+	int GetWorkerCount();
+	int GetActiveWorkerCount();
 
 	Task* Run(const Task::Func& func, void* userdata = nullptr);
 

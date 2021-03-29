@@ -62,7 +62,4 @@ protected:
 protected:
 	virtual size_t DetectAndRenderPointer(uintptr_t p, int depth = 0);
 	virtual size_t DetectAndRenderType(uintptr_t value, size_t limitedSize = sizeof(uintptr_t), int depth = 0);
-
-	const char* DetectStringPointer(uintptr_t p);
-	bool IsValidFloat(float f);
 };

@@ -5,29 +5,27 @@ ProcessHandle::~ProcessHandle()
 {
 }
 
-s2::string ProcessHandle::ReadCString(uintptr_t p)
+void ProcessHandle::ReadCString(uintptr_t p, s2::string& str, int limit)
 {
-	const size_t perTime = 255;
+	char buffer[255];
 
-	size_t read = 0;
-	size_t len = 0;
-	static s2::string ret;
-
+	size_t offset = 0;
 	while (true) {
-		len += perTime;
-		ret.ensure_memory(len);
+		size_t bytesRead = ReadMemory(p + offset, buffer, sizeof(buffer));
 
-		ReadMemory(p + read, (void*)(ret.c_str() + read), perTime);
-
-		const char* pstr = ret.c_str();
-		for (size_t i = read; i < len; i++) {
-			if (pstr[i] == '\0') {
-				return s2::string(pstr, i);
+		for (size_t i = 0; i < bytesRead; i++) {
+			if (buffer[i] == '\0') {
+				str.append(buffer, i);
+				return;
 			}
 		}
+		str.append(buffer, sizeof(buffer));
 
-		read += len;
+		if ((int)str.len() > limit) {
+			str.append("...");
+			return;
+		}
+
+		offset += bytesRead;
 	}
-
-	return ret;
 }

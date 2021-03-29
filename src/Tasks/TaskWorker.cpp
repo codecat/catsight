@@ -33,12 +33,29 @@ void TaskWorker::GiveTask(Task* task)
 	m_task = task;
 }
 
+void TaskWorker::FindNewTask()
+{
+	m_tasks->m_updateLock.lock();
+
+	if (m_tasks->m_queuedTasks.len() > 0) {
+		m_task = m_tasks->m_queuedTasks.pop();
+	} else {
+		m_task = nullptr;
+	}
+
+	m_tasks->m_updateLock.unlock();
+}
+
 void TaskWorker::Update()
 {
 	while (true) {
-		System::Sleep(1);
+		System::Sleep(50);
 
-		if (m_task != nullptr) {
+		if (m_task == nullptr) {
+			FindNewTask();
+		}
+
+		while (m_task != nullptr) {
 			Task* task = m_task;
 			task->RunSync();
 
@@ -50,7 +67,7 @@ void TaskWorker::Update()
 				delete task;
 			}
 
-			m_task = nullptr;
+			FindNewTask();
 		}
 	}
 }

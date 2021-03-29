@@ -27,5 +27,6 @@ public:
 	void GiveTask(Task* task);
 
 private:
+	void FindNewTask();
 	void Update();
 };

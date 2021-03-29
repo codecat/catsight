@@ -23,34 +23,34 @@ TaskWorker* Tasks::AddWorker()
 	return newWorker;
 }
 
-TaskWorker* Tasks::GetAvailableWorker()
+int Tasks::GetWorkerCount()
 {
+	return (int)m_workers.len();
+}
+
+int Tasks::GetActiveWorkerCount()
+{
+	int ret = 0;
 	for (auto worker : m_workers) {
-		if (worker->IsIdle()) {
-			return worker;
+		if (!worker->IsIdle()) {
+			ret++;
 		}
 	}
-	return nullptr;
+	return ret;
 }
 
 Task* Tasks::Run(const Task::Func& func, void* userdata)
 {
 	auto newTask = new Task(func, userdata);
+	m_updateLock.lock();
 	m_queuedTasks.insert(0, newTask);
+	m_updateLock.unlock();
 	return newTask;
 }
 
 void Tasks::Update()
 {
 	m_updateLock.lock();
-
-	while (m_queuedTasks.len() > 0) {
-		auto worker = GetAvailableWorker();
-		if (worker == nullptr) {
-			break;
-		}
-		worker->GiveTask(m_queuedTasks.pop());
-	}
 
 	while (m_finishedTasks.len() > 0) {
 		auto task = m_finishedTasks.pop();

@@ -42,7 +42,10 @@ hello_imgui_add_app(catsight
 	src/Tabs/MemoryTab.cpp
 	src/Tabs/DataTab.cpp
 	src/Tabs/CodeTab.cpp
+	src/Tabs/TaskWaitTab.cpp
+	src/Tabs/StringsTab.cpp
 
+	src/Helpers/MemoryValidator.cpp
 	src/Helpers/DataButton.cpp
 	src/Helpers/CodeButton.cpp
 	src/Helpers/ImGuiString.cpp

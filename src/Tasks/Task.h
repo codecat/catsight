@@ -2,15 +2,20 @@
 
 #include <Common.h>
 
+#include <atomic>
+
 class Task
 {
 public:
-	typedef s2::func<void(void*)> Func;
+	typedef s2::func<void(Task*)> Func;
 	typedef s2::func<void(Task*)> CallbackFunc;
+
+public:
+	std::atomic<float> m_progress;
+	void* m_userdata = nullptr;
 
 private:
 	Func m_func;
-	void* m_userdata;
 
 	CallbackFunc m_callback;
 
@@ -20,7 +25,7 @@ public:
 
 	void RunSync();
 
-	void Then(const CallbackFunc& func);
+	Task* Then(const CallbackFunc& func);
 
 	bool HasCallback();
 	void RunCallback();

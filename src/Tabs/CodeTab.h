@@ -28,6 +28,7 @@ public:
 
 	virtual s2::string GetLabel() override;
 
+	virtual void RenderMenu() override;
 	virtual void Render() override;
 
 protected:

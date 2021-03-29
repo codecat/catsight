@@ -24,5 +24,5 @@ public:
 		return ret;
 	}
 
-	s2::string ReadCString(uintptr_t p);
+	void ReadCString(uintptr_t p, s2::string& str, int limit = -1);
 };

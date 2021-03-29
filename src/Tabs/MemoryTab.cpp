@@ -1,6 +1,7 @@
 #include <Common.h>
 #include <Tabs/MemoryTab.h>
 #include <Inspector.h>
+#include <Helpers/MemoryValidator.h>
 #include <Helpers/CodeButton.h>
 #include <Helpers/DataButton.h>
 #include <Helpers/ImGuiString.h>
@@ -320,10 +321,12 @@ size_t MemoryTab::DetectAndRenderType(uintptr_t value, size_t limitedSize, int d
 	auto handle = m_inspector->m_processHandle;
 
 	if (limitedSize >= sizeof(uintptr_t)) {
-		const char* str = DetectStringPointer(value);
-		if (str != nullptr) {
+		s2::string str;
+		if (MemoryValidator::String(handle, value, str)) {
+			str = str.replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t");
+
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
-			ImGui::Text("\"%s\"", str);
+			ImGui::Text("\"%s\"", str.c_str());
 			ImGui::PopStyleColor();
 			ImGui::SameLine();
 			return sizeof(uintptr_t);
@@ -332,7 +335,7 @@ size_t MemoryTab::DetectAndRenderType(uintptr_t value, size_t limitedSize, int d
 
 	if (m_resolveFloats && limitedSize >= sizeof(float)) {
 		float f = *(float*)&value;
-		if (IsValidFloat(f)) {
+		if (MemoryValidator::Float(f)) {
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
 			ImGui::Text("%f", f);
 			ImGui::PopStyleColor();
@@ -369,63 +372,4 @@ size_t MemoryTab::DetectAndRenderType(uintptr_t value, size_t limitedSize, int d
 	}
 
 	return 0;
-}
-
-const char* MemoryTab::DetectStringPointer(uintptr_t p)
-{
-	auto handle = m_inspector->m_processHandle;
-
-	// It might be a string if:
-	// - The relative offset is 0
-	// - The pointer is not 0
-	// - The pointer is valid and can be read
-	// - There are at least 5 printable characters
-
-	if (p == 0) {
-		return nullptr;
-	}
-
-	if (!handle->IsReadableMemory(p)) {
-		return nullptr;
-	}
-
-	static s2::string _stringBuffer;
-
-	for (int i = 0; i < 5; i++) {
-		char c = handle->Read<char>(p + i);
-		if (c < 0x20 || c > 0x7E) {
-			break;
-		}
-		if (i == 4) {
-			_stringBuffer = handle->ReadCString(p)
-				.replace("\t", "\\t")
-				.replace("\r", "\\r")
-				.replace("\n", "\\n")
-			;
-			return _stringBuffer.c_str();
-		}
-	}
-
-	return nullptr;
-}
-
-bool MemoryTab::IsValidFloat(float f)
-{
-	// The 32 bit integer must not be 0
-	uint32_t u32 = *(uint32_t*)&f;
-	if (u32 == 0) {
-		return false;
-	}
-
-	// The float must not be NaN or infinity
-	if (std::isnan(f) || std::isinf(f)) {
-		return false;
-	}
-
-	// The float must be in an acceptable range
-	if (fabsf(f) < 0.0001f || fabsf(f) > 100000.0f) {
-		return false;
-	}
-
-	return true;
 }

@@ -5,6 +5,8 @@ Task::Task(const Func& func, void* userdata)
 {
 	m_func = func;
 	m_userdata = userdata;
+
+	m_progress = 0.0f;
 }
 
 Task::~Task()
@@ -13,12 +15,13 @@ Task::~Task()
 
 void Task::RunSync()
 {
-	m_func(m_userdata);
+	m_func(this);
 }
 
-void Task::Then(const CallbackFunc& func)
+Task* Task::Then(const CallbackFunc& func)
 {
 	m_callback = func;
+	return this;
 }
 
 bool Task::HasCallback()

@@ -63,6 +63,11 @@ void Inspector::Render()
 		}
 	}
 	ImGui::End();
+
+	// Don't allow closing window if there's still tasks running
+	if (!m_isOpen && m_tasks.GetActiveWorkerCount() > 0) {
+		m_isOpen = true;
+	}
 }
 
 void Inspector::Update()
@@ -73,6 +78,11 @@ void Inspector::Update()
 void Inspector::RenderMenu()
 {
 	if (ImGui::BeginMenuBar()) {
+		int activeTaskWorkers = m_tasks.GetActiveWorkerCount();
+		if (activeTaskWorkers > 0) {
+			ImGui::TextDisabled(ICON_FA_CLOCK " %d", activeTaskWorkers);
+		}
+
 		if (ImGui::BeginMenu("Tabs")) {
 			if (ImGui::MenuItem("New data tab")) {
 				if (m_processRegions.len() > 0) {
