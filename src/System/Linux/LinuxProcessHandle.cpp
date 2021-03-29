@@ -54,8 +54,14 @@ size_t LinuxProcessHandle::ReadMemory(uintptr_t p, void* buffer, size_t size)
 		return 0;
 	}
 
+	m_readLock.lock();
+
 	fseeko(m_fhMemory, (off_t)p, SEEK_SET);
-	return fread(buffer, 1, size, m_fhMemory);
+	size_t ret = fread(buffer, 1, size, m_fhMemory);
+
+	m_readLock.unlock();
+
+	return ret;
 }
 
 bool LinuxProcessHandle::IsReadableMemory(uintptr_t p)

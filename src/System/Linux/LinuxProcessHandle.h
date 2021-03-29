@@ -4,11 +4,14 @@
 #include <System/ProcessHandle.h>
 #include <System/ProcessInfo.h>
 
+#include <mutex>
+
 class LinuxProcessHandle : public ProcessHandle
 {
 private:
 	int m_pid;
 	FILE* m_fhMemory;
+	std::mutex m_readLock;
 
 public:
 	LinuxProcessHandle(const ProcessInfo& info);
