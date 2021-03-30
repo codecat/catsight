@@ -53,7 +53,7 @@ bool WindowsProcessHandle::IsReadableMemory(uintptr_t p)
 
 bool WindowsProcessHandle::IsExecutableMemory(uintptr_t p)
 {
-	asesrt(m_proc != nullptr);
+	assert(m_proc != nullptr);
 	if (m_proc == nullptr) {
 		return false;
 	}
