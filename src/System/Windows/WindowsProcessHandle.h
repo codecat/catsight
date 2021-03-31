@@ -21,4 +21,3 @@ public:
 
 	virtual s2::list<ProcessMemoryRegion> GetMemoryRegions() override;
 };
-
