@@ -5,6 +5,7 @@
 #include <Resources.h>
 #include <Helpers/DataButton.h>
 #include <Helpers/CodeButton.h>
+#include <Helpers/ImGuiString.h>
 
 #include <hello_imgui.h>
 
@@ -29,6 +30,10 @@ void MapsTab::Render()
 		m_inspector->m_processRegions = m_inspector->m_processHandle->GetMemoryRegions();
 	}
 
+	Helpers::InputText("Search", &m_search, ImGuiInputTextFlags_AutoSelectAll);
+
+	ImGui::BeginChild("Maps");
+
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 0));
 
 	if (ImGui::BeginTable("Maps", 3)) {
@@ -38,6 +43,12 @@ void MapsTab::Render()
 		ImGui::TableHeadersRow();
 
 		for (auto& map : m_inspector->m_processRegions) {
+			if (m_search != "") {
+				if (!map.m_path.contains_nocase(m_search) && !map.m_section.contains_nocase(m_search)) {
+					continue;
+				}
+			}
+
 			ImGui::TableNextRow();
 
 			ImGui::PushID(map.m_start);
@@ -105,4 +116,6 @@ void MapsTab::Render()
 	}
 
 	ImGui::PopStyleVar();
+
+	ImGui::EndChild();
 }

@@ -6,6 +6,9 @@
 
 class MapsTab : public Tab
 {
+private:
+	s2::string m_search = "";
+
 public:
 	MapsTab(Inspector* inspector, const s2::string& name);
 	virtual ~MapsTab();
