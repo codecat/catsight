@@ -161,10 +161,11 @@ s2::list<ProcessMemoryRegion> WindowsProcessHandle::GetMemoryRegions()
 		auto& region = ret.add();
 		region.m_start = (uintptr_t)mbi.BaseAddress;
 		region.m_end = (uintptr_t)mbi.BaseAddress + mbi.RegionSize;
-		if (pageSection != nullptr) {
-			region.m_path = pageSection->m_name;
-		} else if (pageModule != nullptr) {
+		if (pageModule != nullptr) {
 			region.m_path = pageModule->m_mod.szExePath;
+		}
+		if (pageSection != nullptr) {
+			region.m_section = pageSection->m_name;
 		}
 
 		if (mbi.Protect == PAGE_READONLY) {

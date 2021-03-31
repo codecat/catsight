@@ -87,11 +87,11 @@ void MapsTab::Render()
 
 			ImGui::SameLine();
 
-			if (map.m_path.startswith(".")) {
+			if (map.m_section != "") {
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(.5f, .5f, .5f, 1));
-				ImGui::TextUnformatted(map.m_path);
+				ImGui::TextUnformatted(map.m_section);
 				ImGui::PopStyleColor();
-			} else {
+			} else if (map.m_path != "") {
 				ImGui::TextUnformatted(map.m_path);
 			}
 

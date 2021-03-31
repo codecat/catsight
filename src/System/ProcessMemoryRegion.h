@@ -19,6 +19,7 @@ struct ProcessMemoryRegion
 	int m_flags = pmrf_None;
 
 	s2::string m_path;
+	s2::string m_section;
 
 	size_t Size() const;
 	bool Contains(uintptr_t p) const;
