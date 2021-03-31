@@ -9,6 +9,7 @@ class CodeTab : public MemoryTab
 {
 private:
 	uintptr_t m_baseOffset = 0;
+	bool m_hasBaseOffset = false;
 
 	ZydisDecoder m_decoder;
 	ZydisFormatter m_formatter;

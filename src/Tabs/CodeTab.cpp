@@ -136,27 +136,34 @@ void CodeTab::Render(float dt)
 
 		ImGui::PushFont(Resources::FontMono);
 		if (ImGui::Button("$")) {
+			if (offset == m_baseOffset) {
+				m_hasBaseOffset = !m_hasBaseOffset;
+			} else {
+				m_hasBaseOffset = true;
+			}
 			m_baseOffset = offset;
 		}
 
 		column += 30;
 		ImGui::SameLine(column);
 
-		ImGui::PushStyleColor(ImGuiCol_Text, ImColor::HSV(0.0f, 0.65f, 1.0f).Value);
-		if (displayOffset == 0) {
-			ImGui::TextUnformatted("$ ==>");
-		} else {
-			const char* format = "$+" OFFSET_FORMAT;
-			if (displayOffset < 0) {
-				format = "$-" OFFSET_FORMAT;
+		if (m_hasBaseOffset) {
+			ImGui::PushStyleColor(ImGuiCol_Text, ImColor::HSV(0.0f, 0.65f, 1.0f).Value);
+			if (displayOffset == 0) {
+				ImGui::TextUnformatted("$ ==>");
+			} else {
+				const char* format = "$+" OFFSET_FORMAT;
+				if (displayOffset < 0) {
+					format = "$-" OFFSET_FORMAT;
+				}
+				uintptr_t absDisplayOffset = (uintptr_t)(displayOffset < 0 ? displayOffset * -1 : displayOffset);
+				ImGui::Text(format, absDisplayOffset);
 			}
-			uintptr_t absDisplayOffset = (uintptr_t)(displayOffset < 0 ? displayOffset * -1 : displayOffset);
-			ImGui::Text(format, absDisplayOffset);
-		}
-		ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
 
-		column += 70;
-		ImGui::SameLine(column);
+			column += 70;
+			ImGui::SameLine(column);
+		}
 
 		uint8_t buffer[MAX_INSTRUCTION_SIZE];
 		size_t bufferSize = handle->ReadMemory(address, buffer, sizeof(buffer));
