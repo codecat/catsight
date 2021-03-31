@@ -9,6 +9,8 @@ void ProcessHandle::ReadCString(uintptr_t p, s2::string& str, int limit)
 {
 	char buffer[255];
 
+	str = "";
+
 	size_t offset = 0;
 	while (true) {
 		size_t bytesRead = ReadMemory(p + offset, buffer, sizeof(buffer));

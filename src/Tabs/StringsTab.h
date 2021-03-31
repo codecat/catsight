@@ -14,6 +14,9 @@ public:
 	};
 	s2::list<Result> m_results;
 
+	s2::list<int> m_filterIndices;
+	s2::string m_search = "";
+
 public:
 	StringsTab(Inspector* inspector, const s2::string& name);
 	virtual ~StringsTab();
