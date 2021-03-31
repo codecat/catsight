@@ -80,18 +80,22 @@ void MapsTab::Render()
 
 			ImGui::TableSetColumnIndex(2);
 			if (map.IsExecute()) {
-				Helpers::CodeButton(m_inspector, map.m_start);
+				uintptr_t codePointer = map.m_start;
+				if (map.m_entryPoint != 0) {
+					codePointer = map.m_entryPoint;
+				}
+				Helpers::CodeButton(m_inspector, codePointer);
 				ImGui::SameLine();
 			}
 			Helpers::DataButton(m_inspector, map.m_start);
 
-			ImGui::SameLine();
-
 			if (map.m_section != "") {
+				ImGui::SameLine();
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(.5f, .5f, .5f, 1));
 				ImGui::TextUnformatted(map.m_section);
 				ImGui::PopStyleColor();
 			} else if (map.m_path != "") {
+				ImGui::SameLine();
 				ImGui::TextUnformatted(map.m_path);
 			}
 

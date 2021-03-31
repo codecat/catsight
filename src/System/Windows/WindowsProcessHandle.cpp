@@ -80,6 +80,7 @@ s2::list<ProcessMemoryRegion> WindowsProcessHandle::GetMemoryRegions()
 	struct ModuleInfo
 	{
 		uintptr_t m_base;
+		uintptr_t m_entryPoint = 0;
 		MODULEENTRY32 m_mod;
 		s2::list<SectionInfo> m_sections;
 	};
@@ -107,7 +108,10 @@ s2::list<ProcessMemoryRegion> WindowsProcessHandle::GetMemoryRegions()
 				continue;
 			}
 
-			//TODO: Do something with headerNT.OptionalHeader.AddressOfEntryPoint (for the attached process)
+			// Get entry point address
+			if (headerNT.OptionalHeader.AddressOfEntryPoint != 0) {
+				newModule.m_entryPoint = newModule.m_base + headerNT.OptionalHeader.AddressOfEntryPoint;
+			}
 
 			// Get sections
 			newModule.m_sections.ensure_memory(headerNT.FileHeader.NumberOfSections);
@@ -162,6 +166,7 @@ s2::list<ProcessMemoryRegion> WindowsProcessHandle::GetMemoryRegions()
 		region.m_start = (uintptr_t)mbi.BaseAddress;
 		region.m_end = (uintptr_t)mbi.BaseAddress + mbi.RegionSize;
 		if (pageModule != nullptr) {
+			region.m_entryPoint = pageModule->m_entryPoint;
 			region.m_path = pageModule->m_mod.szExePath;
 		}
 		if (pageSection != nullptr) {

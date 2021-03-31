@@ -15,6 +15,7 @@ struct ProcessMemoryRegion
 {
 	uintptr_t m_start = 0;
 	uintptr_t m_end = 0;
+	uintptr_t m_entryPoint = 0;
 
 	int m_flags = pmrf_None;
 
