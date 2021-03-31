@@ -27,7 +27,6 @@ hello_imgui_add_app(catsight
 	src/System/Windows/WindowsProcessHandle.cpp
 
 	src/Resources.cpp
-	src/Random.cpp
 	src/Folder.cpp
 
 	src/Tasks/Tasks.cpp
