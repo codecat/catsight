@@ -112,7 +112,7 @@ void MemoryTab::ScrollToOffset(uintptr_t offset)
 	}
 }
 
-void MemoryTab::RenderMenu()
+void MemoryTab::RenderMenu(float dt)
 {
 	if (ImGui::BeginMenu("View")) {
 		if (ImGui::MenuItem("Scroll to top", nullptr, nullptr, m_topOffset > 0)) {
@@ -163,7 +163,7 @@ void MemoryTab::RenderMenu()
 	ImGui::TextDisabled("Scroll: %.2f%%", (m_topOffset / (double)m_topOffsetMax) * 100.0);
 }
 
-bool MemoryTab::RenderBegin()
+bool MemoryTab::RenderBegin(float dt)
 {
 	// Invalidate if we're switching to this tab
 	if (ImGui::IsWindowAppearing()) {
@@ -276,7 +276,7 @@ bool MemoryTab::RenderBegin()
 	return true;
 }
 
-void MemoryTab::RenderEnd()
+void MemoryTab::RenderEnd(float dt)
 {
 	if (m_invalidated) {
 		// If we were not invalidated at the beginning but we are now, then we were invalidated in the middle of drawing the tab.

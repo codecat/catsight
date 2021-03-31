@@ -17,5 +17,5 @@ public:
 
 	virtual bool CanClose() override;
 
-	virtual void Render() override;
+	virtual void Render(float dt) override;
 };

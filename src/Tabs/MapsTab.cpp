@@ -23,7 +23,7 @@ bool MapsTab::CanClose()
 	return false;
 }
 
-void MapsTab::Render()
+void MapsTab::Render(float dt)
 {
 	//TODO: Maybe pick a better way to refresh regions for an inspector rather than opening the maps tab
 	if (ImGui::IsWindowAppearing()) {
@@ -35,6 +35,13 @@ void MapsTab::Render()
 	ImGui::BeginChild("Maps");
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 0));
+
+	if (m_showRegionPointerTime > 0) {
+		m_showRegionPointerTime -= dt;
+		if (m_showRegionPointerTime <= 0) {
+			m_showRegionPointer = 0;
+		}
+	}
 
 	if (ImGui::BeginTable("Maps", 3)) {
 		ImGui::TableSetupColumn("Range", ImGuiTableColumnFlags_WidthFixed);
@@ -138,6 +145,7 @@ void MapsTab::ShowRegionPointer(uintptr_t p)
 {
 	m_showRegionPointer = p;
 	m_showRegionPointerScroll = true;
+	m_showRegionPointerTime = 1000.0f;
 
 	m_search = "";
 }

@@ -28,6 +28,7 @@ hello_imgui_add_app(catsight
 
 	src/Resources.cpp
 	src/Folder.cpp
+	src/Chrono.cpp
 
 	src/Tasks/Tasks.cpp
 	src/Tasks/TaskWorker.cpp

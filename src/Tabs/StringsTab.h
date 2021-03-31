@@ -23,7 +23,7 @@ public:
 
 	virtual s2::string GetLabel() override;
 
-	virtual void Render() override;
+	virtual void Render(float dt) override;
 
 private:
 	void RenderSearch();

@@ -11,6 +11,7 @@ private:
 
 	uintptr_t m_showRegionPointer = 0;
 	bool m_showRegionPointerScroll = false;
+	float m_showRegionPointerTime = 0;
 
 public:
 	MapsTab(Inspector* inspector, const s2::string& name);
@@ -18,7 +19,7 @@ public:
 
 	virtual bool CanClose() override;
 
-	virtual void Render() override;
+	virtual void Render(float dt) override;
 
 public:
 	void ShowRegionPointer(uintptr_t p);

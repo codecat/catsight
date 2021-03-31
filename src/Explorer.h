@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Common.h>
+#include <Chrono.h>
 #include <Inspector.h>
 #include <System/ProcessInfo.h>
 
@@ -13,6 +14,8 @@ public:
 
 private:
 	HelloImGui::RunnerParams m_params;
+
+	Chrono::Time m_lastFrame;
 
 	s2::list<ProcessInfo> m_processes;
 	UserInfo m_currentUser;
@@ -31,6 +34,6 @@ public:
 	Inspector* GetInspector(const ProcessInfo& info);
 	Inspector* GetInspector(int pid);
 
-	void RenderMenu();
+	void RenderMenu(float dt);
 	void Render();
 };

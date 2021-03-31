@@ -7,6 +7,7 @@
 #include <Helpers/DataButton.h>
 #include <Helpers/PointerText.h>
 #include <Tabs/StringsTab.h>
+#include <Chrono.h>
 
 #include <hello_imgui.h>
 
@@ -31,9 +32,9 @@ s2::string CodeTab::GetLabel()
 	return s2::strprintf(ICON_FA_CODE " %s (" POINTER_FORMAT ")###Code", MemoryTab::GetLabel().c_str(), m_region.m_start + m_baseOffset);
 }
 
-void CodeTab::RenderMenu()
+void CodeTab::RenderMenu(float dt)
 {
-	MemoryTab::RenderMenu();
+	MemoryTab::RenderMenu(dt);
 
 	if (ImGui::BeginMenu("Find")) {
 		if (ImGui::MenuItem("All referenced strings")) {
@@ -102,7 +103,7 @@ void CodeTab::RenderMenu()
 	}
 }
 
-void CodeTab::Render()
+void CodeTab::Render(float dt)
 {
 	m_lineDetails.ensure_memory(m_itemsPerPage + 1);
 	while (m_lineDetails.len() < m_itemsPerPage + 1) {

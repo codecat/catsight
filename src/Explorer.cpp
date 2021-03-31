@@ -18,6 +18,8 @@ void Explorer::Run()
 	m_params.appWindowParams.windowSize = ImVec2(1200, 900);
 	m_params.appWindowParams.windowTitle = "Catsight";
 
+	m_lastFrame = Chrono::Now();
+
 	HelloImGui::Run(m_params);
 }
 
@@ -130,7 +132,7 @@ Inspector* Explorer::GetInspector(int pid)
 	return nullptr;
 }
 
-void Explorer::RenderMenu()
+void Explorer::RenderMenu(float dt)
 {
 	if (!System::IsCurrentUserRoot()) {
 		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 0, 1));
@@ -208,12 +210,16 @@ void Explorer::RenderMenu()
 
 void Explorer::Render()
 {
+	auto tmNow = Chrono::Now();
+	float dt = Chrono::DurationMilliseconds(m_lastFrame, tmNow);
+	m_lastFrame = tmNow;
+
 	for (auto inspector : m_inspectors) {
-		inspector->Update();
+		inspector->Update(dt);
 	}
 
 	if (ImGui::BeginMainMenuBar()) {
-		RenderMenu();
+		RenderMenu(dt);
 		ImGui::EndMainMenuBar();
 	}
 
@@ -224,7 +230,7 @@ void Explorer::Render()
 	for (size_t i = 0; i < m_inspectors.len(); i++) {
 		auto inspector = m_inspectors[i];
 
-		inspector->Render();
+		inspector->Render(dt);
 
 		if (!inspector->m_isOpen) {
 			delete inspector;

@@ -30,8 +30,8 @@ public:
 
 	bool GetMemoryRegion(uintptr_t p, ProcessMemoryRegion& region);
 
-	void Render();
-	void Update();
+	void Render(float dt);
+	void Update(float dt);
 
 	template<typename T>
 	T* GetFirstTab()
@@ -45,6 +45,6 @@ public:
 	}
 
 private:
-	void RenderMenu();
-	void RenderTabs();
+	void RenderMenu(float dt);
+	void RenderTabs(float dt);
 };

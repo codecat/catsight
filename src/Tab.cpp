@@ -21,19 +21,19 @@ bool Tab::CanClose()
 	return true;
 }
 
-void Tab::RenderMenu()
+void Tab::RenderMenu(float dt)
 {
 }
 
-bool Tab::RenderBegin()
+bool Tab::RenderBegin(float dt)
 {
 	return true;
 }
 
-void Tab::Render()
+void Tab::Render(float dt)
 {
 }
 
-void Tab::RenderEnd()
+void Tab::RenderEnd(float dt)
 {
 }

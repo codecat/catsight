@@ -15,8 +15,8 @@ public:
 	virtual s2::string GetLabel();
 	virtual bool CanClose();
 
-	virtual void RenderMenu();
-	virtual bool RenderBegin();
-	virtual void Render();
-	virtual void RenderEnd();
+	virtual void RenderMenu(float dt);
+	virtual bool RenderBegin(float dt);
+	virtual void Render(float dt);
+	virtual void RenderEnd(float dt);
 };

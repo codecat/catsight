@@ -22,9 +22,9 @@ s2::string StringsTab::GetLabel()
 	return s2::strprintf(ICON_FA_TEXT_WIDTH " %s (%d)###Strings", TaskWaitTab::GetLabel().c_str(), (int)m_results.len());
 }
 
-void StringsTab::Render()
+void StringsTab::Render(float dt)
 {
-	TaskWaitTab::Render();
+	TaskWaitTab::Render(dt);
 
 	RenderSearch();
 	bool hasFilter = (m_search.len() > 0);

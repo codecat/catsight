@@ -48,7 +48,7 @@ bool Inspector::GetMemoryRegion(uintptr_t p, ProcessMemoryRegion& region)
 	return false;
 }
 
-void Inspector::Render()
+void Inspector::Render(float dt)
 {
 	auto windowTitle = s2::strprintf("%s (%d, %s)###Inspector_%s", m_title.c_str(), m_processInfo.pid, m_processInfo.user.username.c_str(), m_processInfo.filename.c_str());
 
@@ -57,8 +57,8 @@ void Inspector::Render()
 		if (!m_processHandle->IsOpen()) {
 			ImGui::TextDisabled("Unable to open process handle! Your system user probably doesn't have permissions to access arbitrary processes.");
 		} else {
-			RenderMenu();
-			RenderTabs();
+			RenderMenu(dt);
+			RenderTabs(dt);
 		}
 	}
 	ImGui::End();
@@ -69,12 +69,12 @@ void Inspector::Render()
 	}
 }
 
-void Inspector::Update()
+void Inspector::Update(float dt)
 {
 	m_tasks.Update();
 }
 
-void Inspector::RenderMenu()
+void Inspector::RenderMenu(float dt)
 {
 	if (ImGui::BeginMenuBar()) {
 		int activeTaskWorkers = m_tasks.GetActiveWorkerCount();
@@ -94,7 +94,7 @@ void Inspector::RenderMenu()
 	}
 }
 
-void Inspector::RenderTabs()
+void Inspector::RenderTabs(float dt)
 {
 	Tab* activeTab = nullptr;
 
@@ -121,9 +121,9 @@ void Inspector::RenderTabs()
 				activeTab = tab;
 
 				ImGui::BeginChild("TabContent");
-				if (tab->RenderBegin()) {
-					tab->Render();
-					tab->RenderEnd();
+				if (tab->RenderBegin(dt)) {
+					tab->Render(dt);
+					tab->RenderEnd(dt);
 				}
 				ImGui::EndChild();
 				ImGui::EndTabItem();
@@ -144,7 +144,7 @@ void Inspector::RenderTabs()
 
 	if (ImGui::BeginMenuBar()) {
 		if (activeTab != nullptr) {
-			activeTab->RenderMenu();
+			activeTab->RenderMenu(dt);
 		}
 		ImGui::EndMenuBar();
 	}

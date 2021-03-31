@@ -28,8 +28,8 @@ public:
 
 	virtual s2::string GetLabel() override;
 
-	virtual void RenderMenu() override;
-	virtual void Render() override;
+	virtual void RenderMenu(float dt) override;
+	virtual void Render(float dt) override;
 
 protected:
 	virtual intptr_t GetScrollAmount(int wheel) override;

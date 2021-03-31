@@ -22,7 +22,7 @@ bool TaskWaitTab::CanClose()
 	return m_task == nullptr;
 }
 
-void TaskWaitTab::Render()
+void TaskWaitTab::Render(float dt)
 {
 	if (m_task != nullptr) {
 		ImGui::ProgressBar(m_task->m_progress);

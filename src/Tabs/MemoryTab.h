@@ -52,9 +52,9 @@ public:
 	virtual void ScrollTo(uintptr_t p);
 	virtual void ScrollToOffset(uintptr_t offset);
 
-	virtual void RenderMenu() override;
-	virtual bool RenderBegin() override;
-	virtual void RenderEnd() override;
+	virtual void RenderMenu(float dt) override;
+	virtual bool RenderBegin(float dt) override;
+	virtual void RenderEnd(float dt) override;
 
 protected:
 	virtual intptr_t GetScrollAmount(int wheel);

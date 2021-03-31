@@ -48,9 +48,9 @@ s2::string DataTab::GetLabel()
 	return s2::strprintf(ICON_FA_DATABASE " %s (" POINTER_FORMAT ")###Data", MemoryTab::GetLabel().c_str(), m_region.m_start + m_baseOffset);
 }
 
-void DataTab::RenderMenu()
+void DataTab::RenderMenu(float dt)
 {
-	MemoryTab::RenderMenu();
+	MemoryTab::RenderMenu(dt);
 
 	if (ImGui::BeginMenu("Data")) {
 		if (ImGui::MenuItem("Reset base offset", nullptr, nullptr, m_baseOffset > 0)) {
@@ -64,7 +64,7 @@ void DataTab::RenderMenu()
 	}
 }
 
-void DataTab::Render()
+void DataTab::Render(float dt)
 {
 	m_lineDetails.ensure_memory(m_itemsPerPage + 1);
 	while (m_lineDetails.len() < m_itemsPerPage + 1) {
