@@ -26,29 +26,8 @@ void StringsTab::Render()
 {
 	TaskWaitTab::Render();
 
-	if (Helpers::InputText("Search", &m_search, ImGuiInputTextFlags_AutoSelectAll)) {
-		if (m_search == "") {
-			m_filterIndices.clear();
-		} else {
-			s2::string str;
-			if (m_filterIndices.len() > 0) {
-				for (int i = (int)m_filterIndices.len() - 1; i >= 0; i--) {
-					m_inspector->m_processHandle->ReadCString(m_results[m_filterIndices[i]].m_string, str);
-					if (!str.contains_nocase(m_search)) {
-						m_filterIndices.remove(i);
-					}
-				}
-			} else {
-				for (int i = 0; i < (int)m_results.len(); i++) {
-					m_inspector->m_processHandle->ReadCString(m_results[i].m_string, str);
-					if (str.contains_nocase(m_search)) {
-						m_filterIndices.add(i);
-					}
-				}
-			}
-		}
-	}
-	bool hasFilter = (m_search != "");
+	RenderSearch();
+	bool hasFilter = (m_search.len() > 0);
 
 	ImGui::BeginChild("Items");
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 0));
@@ -92,4 +71,39 @@ void StringsTab::Render()
 
 	ImGui::PopStyleVar();
 	ImGui::EndChild();
+}
+
+void StringsTab::RenderSearch()
+{
+	size_t prevSearchLen = m_search.len();
+	bool changed = Helpers::InputText("Search", &m_search, ImGuiInputTextFlags_AutoSelectAll);
+
+	if (!changed) {
+		return;
+	}
+
+	if (m_search == "") {
+		m_filterIndices.clear();
+		return;
+	}
+
+	s2::string str;
+
+	if (m_filterIndices.len() > 0 && m_search.len() > prevSearchLen) {
+		for (int i = (int)m_filterIndices.len() - 1; i >= 0; i--) {
+			m_inspector->m_processHandle->ReadCString(m_results[m_filterIndices[i]].m_string, str);
+			if (!str.contains_nocase(m_search)) {
+				m_filterIndices.remove(i);
+			}
+		}
+		return;
+	}
+
+	m_filterIndices.clear();
+	for (int i = 0; i < (int)m_results.len(); i++) {
+		m_inspector->m_processHandle->ReadCString(m_results[i].m_string, str);
+		if (str.contains_nocase(m_search)) {
+			m_filterIndices.add(i);
+		}
+	}
 }

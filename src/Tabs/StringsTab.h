@@ -24,4 +24,7 @@ public:
 	virtual s2::string GetLabel() override;
 
 	virtual void Render() override;
+
+private:
+	void RenderSearch();
 };
