@@ -33,6 +33,17 @@ public:
 	void Render();
 	void Update();
 
+	template<typename T>
+	T* GetFirstTab()
+	{
+		for (auto tab : m_tabs) {
+			if (dynamic_cast<T*>(tab) != nullptr) {
+				return (T*)tab;
+			}
+		}
+		return nullptr;
+	}
+
 private:
 	void RenderMenu();
 	void RenderTabs();

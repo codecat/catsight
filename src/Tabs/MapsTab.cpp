@@ -51,11 +51,25 @@ void MapsTab::Render()
 
 			ImGui::TableNextRow();
 
+			bool highlight = false;
+			if (m_showRegionPointer != 0 && map.Contains(m_showRegionPointer)) {
+				if (m_showRegionPointerScroll) {
+					ImGui::SetScrollHereY();
+					m_showRegionPointerScroll = false;
+				}
+				highlight = true;
+			}
+
 			ImGui::PushID(map.m_start);
+
 			ImGui::PushFont(Resources::FontMono);
 
 			ImGui::TableSetColumnIndex(0);
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(.5f, .5f, .5f, 1));
+			if (highlight) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, .5f, .5f, 1));
+			} else {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(.5f, .5f, .5f, 1));
+			}
 			ImGui::Text(POINTER_FORMAT " - " POINTER_FORMAT, map.m_start, map.m_end);
 			ImGui::PopStyleColor();
 
@@ -118,4 +132,12 @@ void MapsTab::Render()
 	ImGui::PopStyleVar();
 
 	ImGui::EndChild();
+}
+
+void MapsTab::ShowRegionPointer(uintptr_t p)
+{
+	m_showRegionPointer = p;
+	m_showRegionPointerScroll = true;
+
+	m_search = "";
 }

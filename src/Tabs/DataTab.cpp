@@ -5,6 +5,7 @@
 #include <Resources.h>
 #include <Helpers/DataButton.h>
 #include <Helpers/CodeButton.h>
+#include <Helpers/PointerText.h>
 
 #include <hello_imgui.h>
 
@@ -108,17 +109,15 @@ void DataTab::Render()
 		}
 
 		ImGui::PushID((void*)address);
-		ImGui::PushFont(Resources::FontMono);
 
 		float column = 0.0f;
 
-		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(.5f, .5f, .5f, 1));
-		ImGui::Text(POINTER_FORMAT, address);
-		ImGui::PopStyleColor();
+		Helpers::PointerText(m_inspector, address);
 		ImGui::SameLine();
 
 		column += 130;
 
+		ImGui::PushFont(Resources::FontMono);
 		if (ImGui::Button("$")) {
 			m_baseOffset = offset;
 		}

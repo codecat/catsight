@@ -5,6 +5,7 @@
 #include <Helpers/MemoryValidator.h>
 #include <Helpers/CodeButton.h>
 #include <Helpers/DataButton.h>
+#include <Helpers/PointerText.h>
 #include <Tabs/StringsTab.h>
 
 #include <hello_imgui.h>
@@ -126,15 +127,13 @@ void CodeTab::Render()
 		auto& line = m_lineDetails[i];
 
 		ImGui::PushID((void*)address);
-		ImGui::PushFont(Resources::FontMono);
 
-		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(.5f, .5f, .5f, 1));
-		ImGui::Text(POINTER_FORMAT, address);
-		ImGui::PopStyleColor();
+		Helpers::PointerText(m_inspector, address);
 		ImGui::SameLine();
 
 		float column = 130.0f;
 
+		ImGui::PushFont(Resources::FontMono);
 		if (ImGui::Button("$")) {
 			m_baseOffset = offset;
 		}
