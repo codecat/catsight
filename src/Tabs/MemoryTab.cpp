@@ -10,7 +10,7 @@
 
 MemoryTab::MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p)
 	: Tab(inspector, name)
-	, m_typeResolver(inspector)
+	, m_typeRenderer(inspector)
 {
 	GoTo(p);
 }
@@ -152,7 +152,7 @@ void MemoryTab::RenderMenu(float dt)
 		ImGui::EndMenu();
 	}
 
-	if (m_typeResolver.RenderMenu()) {
+	if (m_typeRenderer.RenderMenu()) {
 		m_invalidated = true;
 	}
 

@@ -4,7 +4,7 @@
 
 class Inspector;
 
-class TypeResolver
+class TypeRenderer
 {
 public:
 	bool m_resolveFloats = true;
@@ -15,8 +15,8 @@ private:
 	Inspector* m_inspector;
 
 public:
-	TypeResolver(Inspector* inspector);
-	~TypeResolver();
+	TypeRenderer(Inspector* inspector);
+	~TypeRenderer();
 
 	bool RenderMenu();
 

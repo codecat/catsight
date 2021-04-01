@@ -50,7 +50,7 @@ hello_imgui_add_app(catsight
 	src/Helpers/CodeButton.cpp
 	src/Helpers/PointerText.cpp
 	src/Helpers/ImGuiString.cpp
-	src/Helpers/TypeResolver.cpp
+	src/Helpers/TypeRenderer.cpp
 )
 
 include_directories(

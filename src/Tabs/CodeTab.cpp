@@ -263,9 +263,9 @@ void CodeTab::Render(float dt)
 						}
 					}
 
-					m_typeResolver.DetectAndRenderType(operandValue);
+					m_typeRenderer.DetectAndRenderType(operandValue);
 				} else {
-					m_typeResolver.DetectAndRenderType(operandValue, op.size / 8);
+					m_typeRenderer.DetectAndRenderType(operandValue, op.size / 8);
 				}
 			}
 

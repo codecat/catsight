@@ -3,7 +3,7 @@
 #include <Common.h>
 #include <Tab.h>
 #include <System/ProcessMemoryRegion.h>
-#include <Helpers/TypeResolver.h>
+#include <Helpers/TypeRenderer.h>
 
 class MemoryTab : public Tab
 {
@@ -12,7 +12,7 @@ public:
 	ProcessMemoryRegion m_region;
 
 protected:
-	TypeResolver m_typeResolver;
+	TypeRenderer m_typeRenderer;
 
 	float m_itemHeight = 22.0f;
 	size_t m_maxHistoryItems = 25;

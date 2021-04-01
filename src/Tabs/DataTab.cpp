@@ -27,7 +27,7 @@ uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr
 	offset += relativeOffset;
 	uintptr_t address = (uintptr_t)m_region.m_start + offset;
 
-	size_t ret = m_typeResolver.DetectAndRenderPointer(address);
+	size_t ret = m_typeRenderer.DetectAndRenderPointer(address);
 
 	if (ret > 0 && relativeOffset > 0) {
 		ImGui::SameLine(0, 2);

@@ -1,5 +1,5 @@
 #include <Common.h>
-#include <Helpers/TypeResolver.h>
+#include <Helpers/TypeRenderer.h>
 #include <Inspector.h>
 #include <Helpers/MemoryValidator.h>
 #include <Helpers/CodeButton.h>
@@ -7,16 +7,16 @@
 
 #include <hello_imgui.h>
 
-TypeResolver::TypeResolver(Inspector* inspector)
+TypeRenderer::TypeRenderer(Inspector* inspector)
 {
 	m_inspector = inspector;
 }
 
-TypeResolver::~TypeResolver()
+TypeRenderer::~TypeRenderer()
 {
 }
 
-bool TypeResolver::RenderMenu()
+bool TypeRenderer::RenderMenu()
 {
 	bool ret = false;
 
@@ -37,7 +37,7 @@ bool TypeResolver::RenderMenu()
 	return ret;
 }
 
-size_t TypeResolver::DetectAndRenderPointer(uintptr_t p, int depth)
+size_t TypeRenderer::DetectAndRenderPointer(uintptr_t p, int depth)
 {
 	// NOTE: The order of which these are checked is important! We should test for the least common types first!
 
@@ -58,7 +58,7 @@ size_t TypeResolver::DetectAndRenderPointer(uintptr_t p, int depth)
 	return 0;
 }
 
-size_t TypeResolver::DetectAndRenderType(uintptr_t value, size_t limitedSize, int depth)
+size_t TypeRenderer::DetectAndRenderType(uintptr_t value, size_t limitedSize, int depth)
 {
 	auto handle = m_inspector->m_processHandle;
 
