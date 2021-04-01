@@ -67,25 +67,12 @@ void CodeTab::RenderMenu(float dt)
 
 					// Go through all instruction operands and find valid pointers
 					for (uint8_t j = 0; j < instr.operand_count; j++) {
-						uintptr_t operandValue = 0;
+						uintptr_t operandValue = GetOperandValue(instr, instr.operands[j], address);
 
-						auto& op = instr.operands[j];
-						if (op.type == ZYDIS_OPERAND_TYPE_IMMEDIATE) {
-							if (op.imm.is_relative) {
-								ZydisCalcAbsoluteAddress(&instr, &op, address, &operandValue);
-							} else {
-								operandValue = op.imm.value.u;
-							}
-						} else if (op.type == ZYDIS_OPERAND_TYPE_MEMORY) {
-							ZydisCalcAbsoluteAddress(&instr, &op, address, &operandValue);
-						}
-
-						if (handle->IsReadableMemory(operandValue)) {
-							if (MemoryValidator::String(handle, operandValue)) {
-								auto& newResult = stringsTab->m_results.add();
-								newResult.m_code = address;
-								newResult.m_string = operandValue;
-							}
+						if (handle->IsReadableMemory(operandValue) && MemoryValidator::String(handle, operandValue)) {
+							auto& newResult = stringsTab->m_results.add();
+							newResult.m_code = address;
+							newResult.m_string = operandValue;
 						}
 					}
 
@@ -242,23 +229,10 @@ void CodeTab::Render(float dt)
 
 			// Go through all instruction operands and find stuff we want to display
 			for (uint8_t j = 0; j < instr.operand_count; j++) {
-				uintptr_t operandValue = 0;
-
 				auto& op = instr.operands[j];
-				if (op.type == ZYDIS_OPERAND_TYPE_IMMEDIATE) {
-					if (op.imm.is_relative) {
-						ZydisCalcAbsoluteAddress(&instr, &op, address, &operandValue);
-					} else {
-						operandValue = op.imm.value.u;
-					}
-				} else if (op.type == ZYDIS_OPERAND_TYPE_MEMORY) {
-					ZydisCalcAbsoluteAddress(&instr, &op, address, &operandValue);
-				}
+				uintptr_t operandValue = GetOperandValue(instr, op, address);
 
 				if (handle->IsReadableMemory(operandValue)) {
-					//ImGui::TextDisabled(POINTER_FORMAT, operandValue);
-					//ImGui::SameLine();
-
 					if (m_invalidated) {
 						if (instr.meta.branch_type != ZYDIS_BRANCH_TYPE_NONE && instr.meta.category != ZYDIS_CATEGORY_CALL) {
 							intptr_t jumpOffsetBytes = operandValue - address;
@@ -404,4 +378,23 @@ uintptr_t CodeTab::DisassembleBack(const uint8_t* data, size_t size, uintptr_t i
 		return abuf[0];
 	}
 	return abuf[(i - n + 128) % 128];
+}
+
+uintptr_t CodeTab::GetOperandValue(ZydisDecodedInstruction& instr, ZydisDecodedOperand& op, uintptr_t address)
+{
+	//TODO: Move this function somewhere else?
+
+	uintptr_t ret = 0;
+
+	if (op.type == ZYDIS_OPERAND_TYPE_IMMEDIATE) {
+		if (op.imm.is_relative) {
+			ZydisCalcAbsoluteAddress(&instr, &op, address, &ret);
+		} else {
+			ret = op.imm.value.u;
+		}
+	} else if (op.type == ZYDIS_OPERAND_TYPE_MEMORY) {
+		ZydisCalcAbsoluteAddress(&instr, &op, address, &ret);
+	}
+
+	return ret;
 }
