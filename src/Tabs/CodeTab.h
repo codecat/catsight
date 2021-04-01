@@ -38,5 +38,5 @@ protected:
 private:
 	uintptr_t DisassembleBack(const uint8_t* data, size_t size, uintptr_t ip, int n);
 
-	static uintptr_t GetOperandValue(ZydisDecodedInstruction& instr, ZydisDecodedOperand& op, uintptr_t address);
+	static uintptr_t GetOperandValue(ZydisDecodedInstruction& instr, int i, uintptr_t address);
 };

@@ -67,7 +67,7 @@ void CodeTab::RenderMenu(float dt)
 
 					// Go through all instruction operands and find valid pointers
 					for (uint8_t j = 0; j < instr.operand_count; j++) {
-						uintptr_t operandValue = GetOperandValue(instr, instr.operands[j], address);
+						uintptr_t operandValue = GetOperandValue(instr, j, address);
 
 						if (handle->IsReadableMemory(operandValue) && MemoryValidator::String(handle, operandValue)) {
 							auto& newResult = stringsTab->m_results.add();
@@ -229,8 +229,7 @@ void CodeTab::Render(float dt)
 
 			// Go through all instruction operands and find stuff we want to display
 			for (uint8_t j = 0; j < instr.operand_count; j++) {
-				auto& op = instr.operands[j];
-				uintptr_t operandValue = GetOperandValue(instr, op, address);
+				uintptr_t operandValue = GetOperandValue(instr, j, address);
 
 				if (handle->IsReadableMemory(operandValue)) {
 					if (m_invalidated) {
@@ -265,7 +264,7 @@ void CodeTab::Render(float dt)
 
 					m_typeRenderer.DetectAndRenderType(operandValue);
 				} else {
-					m_typeRenderer.DetectAndRenderType(operandValue, op.size / 8);
+					m_typeRenderer.DetectAndRenderType(operandValue, instr.operands[j].size / 8);
 				}
 			}
 
@@ -380,11 +379,13 @@ uintptr_t CodeTab::DisassembleBack(const uint8_t* data, size_t size, uintptr_t i
 	return abuf[(i - n + 128) % 128];
 }
 
-uintptr_t CodeTab::GetOperandValue(ZydisDecodedInstruction& instr, ZydisDecodedOperand& op, uintptr_t address)
+uintptr_t CodeTab::GetOperandValue(ZydisDecodedInstruction& instr, int i, uintptr_t address)
 {
 	//TODO: Move this function somewhere else?
 
 	uintptr_t ret = 0;
+
+	auto& op = instr.operands[i];
 
 	if (op.type == ZYDIS_OPERAND_TYPE_IMMEDIATE) {
 		if (op.imm.is_relative) {
