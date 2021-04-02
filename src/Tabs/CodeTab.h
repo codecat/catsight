@@ -26,6 +26,9 @@ private:
 	bool m_ui_findConstantPopupShow = false;
 	s2::string m_ui_findConstantValueString;
 
+	bool m_ui_findPatternPopupShow = false;
+	s2::string m_ui_findPatternValueString;
+
 public:
 	CodeTab(Inspector* inspector, const s2::string& id, uintptr_t p);
 	virtual ~CodeTab();

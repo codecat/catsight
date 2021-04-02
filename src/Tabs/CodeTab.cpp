@@ -2,15 +2,18 @@
 #include <Tabs/CodeTab.h>
 #include <Inspector.h>
 #include <Resources.h>
+#include <Chrono.h>
+#include <Patterns.h>
+
 #include <Helpers/MemoryValidator.h>
 #include <Helpers/CodeButton.h>
 #include <Helpers/DataButton.h>
 #include <Helpers/PointerText.h>
 #include <Helpers/ImGuiString.h>
 #include <Helpers/Expression.h>
+
 #include <Tabs/StringsTab.h>
 #include <Tabs/CodeResultsTab.h>
-#include <Chrono.h>
 
 #include <hello_imgui.h>
 
@@ -94,12 +97,17 @@ void CodeTab::RenderMenu(float dt)
 			m_ui_findConstantPopupShow = true;
 		}
 
+		if (ImGui::MenuItem("Pattern...", "Ctrl+B")) {
+			m_ui_findPatternPopupShow = true;
+		}
+
 		ImGui::EndMenu();
 	}
 }
 
 void CodeTab::Render(float dt)
 {
+	// Find constant
 	if (m_ui_findConstantPopupShow) {
 		ImGui::OpenPopup("FindConstantPopup");
 		m_ui_findConstantPopupShow = false;
@@ -157,6 +165,41 @@ void CodeTab::Render(float dt)
 			});
 
 			m_ui_findConstantValueString = "";
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+	// Find pattern (Ctrl+B)
+	if (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed('B')) {
+		m_ui_findPatternPopupShow = true;
+	}
+	if (m_ui_findPatternPopupShow) {
+		ImGui::OpenPopup("FindPatternPopup");
+		m_ui_findPatternPopupShow = false;
+	}
+	if (ImGui::BeginPopup("FindPatternPopup")) {
+		if (ImGui::IsWindowAppearing()) {
+			ImGui::SetKeyboardFocusHere();
+		}
+		if (Helpers::InputText("Pattern", &m_ui_findPatternValueString, ImGuiInputTextFlags_EnterReturnsTrue)) {
+			auto pattern = m_ui_findPatternValueString;
+			auto handle = m_inspector->m_processHandle;
+			auto region = m_region;
+
+			auto newTab = new CodeResultsTab(m_inspector, "Pattern");
+			m_inspector->m_tabs.add(newTab);
+
+			newTab->m_task = m_inspector->m_tasks.Run([pattern, handle, region, newTab](Task* task) {
+				Patterns::Find(handle, pattern, [newTab](uintptr_t p) {
+					auto& newResult = newTab->m_results.add();
+					newResult.m_address = p;
+				}, task, region);
+			})->Then([newTab](Task*) {
+				newTab->TaskFinished();
+			});
+
+			m_ui_findPatternValueString = "";
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
