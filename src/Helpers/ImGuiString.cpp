@@ -38,6 +38,11 @@ bool Helpers::InputText(const char* label, s2::string* str, ImGuiInputTextFlags 
 	flags |= ImGuiInputTextFlags_CallbackResize;
 	flags |= ImGuiInputTextFlags_CallbackEdit;
 
+	// Since we make use of the internal buffer, we make sure it's not actually null before using it
+	if (str->is_null()) {
+		*str = "";
+	}
+
 	InputTextCallback_UserData<s2::string> userdata;
 	userdata.Str = str;
 	userdata.ChainCallback = callback;

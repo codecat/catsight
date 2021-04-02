@@ -7,7 +7,7 @@
 class MapsTab : public Tab
 {
 private:
-	s2::string m_search = "";
+	s2::string m_search;
 
 	uintptr_t m_showRegionPointer = 0;
 	bool m_showRegionPointerScroll = false;
