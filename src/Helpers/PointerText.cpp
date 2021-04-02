@@ -19,6 +19,13 @@ void Helpers::PointerText(Inspector* inspector, uintptr_t p)
 	ImGui::PopFont();
 
 	if (ImGui::BeginPopupContextItem("pointer context menu")) {
+		ImGui::TextDisabled(POINTER_FORMAT, p);
+
+		if (ImGui::MenuItem(ICON_FA_COPY " Copy address")) {
+			auto strCopyAddress = s2::strprintf(POINTER_FORMAT, p);
+			ImGui::SetClipboardText(strCopyAddress);
+		}
+
 		if (ImGui::MenuItem("Locate in maps")) {
 			auto mapsTab = inspector->GetFirstTab<MapsTab>();
 			if (mapsTab != nullptr) {
@@ -26,6 +33,7 @@ void Helpers::PointerText(Inspector* inspector, uintptr_t p)
 				mapsTab->m_shouldFocus = true;
 			}
 		}
+
 		ImGui::EndPopup();
 	}
 	ImGui::PopID();
