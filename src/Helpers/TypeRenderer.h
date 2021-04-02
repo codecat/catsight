@@ -7,7 +7,7 @@ class Inspector;
 class TypeRenderer
 {
 public:
-	bool m_resolveFloats = true;
+	bool m_resolveFloats = false;
 	bool m_resolvePointersIfAligned = true;
 	int m_resolvePointerMaxDepth = 4;
 
