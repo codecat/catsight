@@ -203,7 +203,6 @@ bool MemoryTab::RenderBegin(float dt)
 		}
 
 		if (actuallyGo) {
-			printf("Goto: %s\n", m_ui_gotoAddressString.c_str());
 			GoTo(gotoPointer);
 			m_ui_gotoAddressString = "";
 			ImGui::CloseCurrentPopup();
