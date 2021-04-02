@@ -19,12 +19,12 @@ private:
 	s2::list<LineDetails> m_lineDetails;
 
 public:
-	DataTab(Inspector* inspector, const s2::string& name, uintptr_t p);
+	DataTab(Inspector* inspector, const s2::string& id, uintptr_t p);
 	virtual ~DataTab();
 
 	uint16_t RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr_t displayOffset, int lineIndex);
 
-	virtual s2::string GetLabel() override;
+	virtual const char* GetTitlePrefix() override;
 
 	virtual void RenderMenu(float dt) override;
 	virtual void Render(float dt) override;

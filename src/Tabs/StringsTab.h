@@ -10,10 +10,10 @@ private:
 	s2::string m_search;
 
 public:
-	StringsTab(Inspector* inspector, const s2::string& name);
+	StringsTab(Inspector* inspector, const s2::string& id);
 	virtual ~StringsTab();
 
-	virtual s2::string GetLabel() override;
+	virtual const char* GetTitlePrefix() override;
 
 	virtual void Render(float dt) override;
 

@@ -16,8 +16,8 @@
 
 #include <chrono>
 
-CodeTab::CodeTab(Inspector* inspector, const s2::string& name, uintptr_t p)
-	: MemoryTab(inspector, name, p)
+CodeTab::CodeTab(Inspector* inspector, const s2::string& id, uintptr_t p)
+	: MemoryTab(inspector, id, p)
 {
 	//TODO: Different parameters for 32 bit
 	ZydisDecoderInit(&m_decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_ADDRESS_WIDTH_64);
@@ -30,9 +30,9 @@ CodeTab::~CodeTab()
 {
 }
 
-s2::string CodeTab::GetLabel()
+const char* CodeTab::GetTitlePrefix()
 {
-	return s2::strprintf(ICON_FA_CODE " %s (" POINTER_FORMAT ")###Code", MemoryTab::GetLabel().c_str(), m_region.m_start + m_baseOffset);
+	return ICON_FA_CODE;
 }
 
 void CodeTab::RenderMenu(float dt)

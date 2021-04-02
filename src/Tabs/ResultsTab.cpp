@@ -5,14 +5,19 @@
 
 #include <hello_imgui.h>
 
-ResultsTab::ResultsTab(Inspector* inspector, const s2::string& name)
-	: TaskWaitTab(inspector, name)
+ResultsTab::ResultsTab(Inspector* inspector, const s2::string& id)
+	: TaskWaitTab(inspector, id)
 {
 	m_results.ensure_memory(1000);
 }
 
 ResultsTab::~ResultsTab()
 {
+}
+
+s2::string ResultsTab::GetTitleSuffix()
+{
+	return s2::strprintf("(%d)", (int)m_results.len());
 }
 
 void ResultsTab::Render(float dt)

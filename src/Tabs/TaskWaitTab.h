@@ -10,7 +10,7 @@ public:
 	Task* m_task = nullptr;
 
 public:
-	TaskWaitTab(Inspector* inspector, const s2::string& name);
+	TaskWaitTab(Inspector* inspector, const s2::string& id);
 	virtual ~TaskWaitTab();
 
 	virtual void TaskFinished();

@@ -3,8 +3,8 @@
 
 #include <hello_imgui.h>
 
-TaskWaitTab::TaskWaitTab(Inspector* inspector, const s2::string& name)
-	: Tab(inspector, name)
+TaskWaitTab::TaskWaitTab(Inspector* inspector, const s2::string& id)
+	: Tab(inspector, id)
 {
 }
 

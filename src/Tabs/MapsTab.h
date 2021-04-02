@@ -14,7 +14,7 @@ private:
 	float m_showRegionPointerTime = 0;
 
 public:
-	MapsTab(Inspector* inspector, const s2::string& name);
+	MapsTab(Inspector* inspector, const s2::string& id);
 	virtual ~MapsTab();
 
 	virtual bool CanClose() override;

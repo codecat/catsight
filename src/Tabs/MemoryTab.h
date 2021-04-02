@@ -36,7 +36,7 @@ private:
 	bool m_wasInvalidatedAtBegin = false;
 
 public:
-	MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p);
+	MemoryTab(Inspector* inspector, const s2::string& id, uintptr_t p);
 	virtual ~MemoryTab();
 
 	virtual void SetRegion(const ProcessMemoryRegion& region);
@@ -50,6 +50,8 @@ public:
 
 	virtual void ScrollTo(uintptr_t p);
 	virtual void ScrollToOffset(uintptr_t offset);
+
+	virtual s2::string GetTitleSuffix() override;
 
 	virtual void RenderMenu(float dt) override;
 	virtual bool RenderBegin(float dt) override;

@@ -14,8 +14,10 @@ public:
 	s2::list<Result> m_results;
 
 public:
-	ResultsTab(Inspector* inspector, const s2::string& name);
+	ResultsTab(Inspector* inspector, const s2::string& id);
 	virtual ~ResultsTab();
+
+	virtual s2::string GetTitleSuffix() override;
 
 	virtual void Render(float dt) override;
 

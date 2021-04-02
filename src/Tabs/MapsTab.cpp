@@ -9,8 +9,8 @@
 
 #include <hello_imgui.h>
 
-MapsTab::MapsTab(Inspector* inspector, const s2::string& name)
-	: Tab(inspector, name)
+MapsTab::MapsTab(Inspector* inspector, const s2::string& id)
+	: Tab(inspector, id)
 {
 }
 

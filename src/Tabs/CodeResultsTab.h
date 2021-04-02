@@ -12,8 +12,10 @@ private:
 	ZydisFormatter m_formatter;
 
 public:
-	CodeResultsTab(Inspector* inspector, const s2::string& name);
+	CodeResultsTab(Inspector* inspector, const s2::string& id);
 	virtual ~CodeResultsTab();
+
+	virtual const char* GetTitlePrefix() override;
 
 protected:
 	virtual void RenderResult(const Result& result) override;

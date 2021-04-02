@@ -9,8 +9,8 @@
 
 #include <hello_imgui.h>
 
-MemoryTab::MemoryTab(Inspector* inspector, const s2::string& name, uintptr_t p)
-	: Tab(inspector, name)
+MemoryTab::MemoryTab(Inspector* inspector, const s2::string& id, uintptr_t p)
+	: Tab(inspector, id)
 	, m_typeRenderer(inspector)
 {
 	GoTo(p);
@@ -112,6 +112,11 @@ void MemoryTab::ScrollToOffset(uintptr_t offset)
 		m_topOffset = offset;
 		m_invalidated = true;
 	}
+}
+
+s2::string MemoryTab::GetTitleSuffix()
+{
+	return s2::strprintf("(" POINTER_FORMAT ")", m_region.m_start);
 }
 
 void MemoryTab::RenderMenu(float dt)

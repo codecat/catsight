@@ -27,10 +27,10 @@ private:
 	s2::string m_ui_findConstantValueString;
 
 public:
-	CodeTab(Inspector* inspector, const s2::string& name, uintptr_t p);
+	CodeTab(Inspector* inspector, const s2::string& id, uintptr_t p);
 	virtual ~CodeTab();
 
-	virtual s2::string GetLabel() override;
+	virtual const char* GetTitlePrefix() override;
 
 	virtual void RenderMenu(float dt) override;
 	virtual void Render(float dt) override;

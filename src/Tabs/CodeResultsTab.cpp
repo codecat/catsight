@@ -5,8 +5,8 @@
 
 #include <hello_imgui.h>
 
-CodeResultsTab::CodeResultsTab(Inspector* inspector, const s2::string& name)
-	: ResultsTab(inspector, name)
+CodeResultsTab::CodeResultsTab(Inspector* inspector, const s2::string& id)
+	: ResultsTab(inspector, id)
 {
 	//TODO: Different parameters for 32 bit
 	ZydisDecoderInit(&m_decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_ADDRESS_WIDTH_64);
@@ -15,6 +15,11 @@ CodeResultsTab::CodeResultsTab(Inspector* inspector, const s2::string& name)
 
 CodeResultsTab::~CodeResultsTab()
 {
+}
+
+const char* CodeResultsTab::GetTitlePrefix()
+{
+	return ICON_FA_SEARCH;
 }
 
 void CodeResultsTab::RenderResult(const Result& result)

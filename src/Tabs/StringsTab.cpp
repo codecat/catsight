@@ -7,8 +7,8 @@
 
 #include <hello_imgui.h>
 
-StringsTab::StringsTab(Inspector* inspector, const s2::string& name)
-	: CodeResultsTab(inspector, name)
+StringsTab::StringsTab(Inspector* inspector, const s2::string& id)
+	: CodeResultsTab(inspector, id)
 {
 	m_results.ensure_memory(10000);
 }
@@ -17,9 +17,9 @@ StringsTab::~StringsTab()
 {
 }
 
-s2::string StringsTab::GetLabel()
+const char* StringsTab::GetTitlePrefix()
 {
-	return s2::strprintf(ICON_FA_TEXT_WIDTH " %s (%d)###Strings", TaskWaitTab::GetLabel().c_str(), (int)m_results.len());
+	return ICON_FA_TEXT_WIDTH;
 }
 
 void StringsTab::Render(float dt)

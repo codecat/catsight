@@ -9,8 +9,8 @@
 
 #include <hello_imgui.h>
 
-DataTab::DataTab(Inspector* inspector, const s2::string& name, uintptr_t p)
-	: MemoryTab(inspector, name, p)
+DataTab::DataTab(Inspector* inspector, const s2::string& id, uintptr_t p)
+	: MemoryTab(inspector, id, p)
 {
 	m_addressMask = 0x7;
 }
@@ -43,9 +43,9 @@ uint16_t DataTab::RenderMember(uintptr_t offset, uint16_t relativeOffset, intptr
 	return (uint16_t)ret;
 }
 
-s2::string DataTab::GetLabel()
+const char* DataTab::GetTitlePrefix()
 {
-	return s2::strprintf(ICON_FA_DATABASE " %s (" POINTER_FORMAT ")###Data", MemoryTab::GetLabel().c_str(), m_region.m_start + m_baseOffset);
+	return ICON_FA_DATABASE;
 }
 
 void DataTab::RenderMenu(float dt)
