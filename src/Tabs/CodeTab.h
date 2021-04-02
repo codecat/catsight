@@ -23,6 +23,9 @@ private:
 	};
 	s2::list<LineDetails> m_lineDetails;
 
+	bool m_ui_findConstantPopupShow = false;
+	s2::string m_ui_findConstantValueString;
+
 public:
 	CodeTab(Inspector* inspector, const s2::string& name, uintptr_t p);
 	virtual ~CodeTab();

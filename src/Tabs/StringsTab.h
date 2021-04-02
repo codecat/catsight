@@ -1,19 +1,11 @@
 #pragma once
 
 #include <Common.h>
-#include <Tab.h>
-#include <Tabs/TaskWaitTab.h>
+#include <Tabs/CodeResultsTab.h>
 
-class StringsTab : public TaskWaitTab
+class StringsTab : public CodeResultsTab
 {
-public:
-	struct Result
-	{
-		uintptr_t m_code;
-		uintptr_t m_string;
-	};
-	s2::list<Result> m_results;
-
+private:
 	s2::list<int> m_filterIndices;
 	s2::string m_search;
 
@@ -24,6 +16,12 @@ public:
 	virtual s2::string GetLabel() override;
 
 	virtual void Render(float dt) override;
+
+protected:
+	virtual void RenderResult(const Result& result) override;
+
+	virtual size_t GetNumResults() override;
+	virtual const Result& GetResult(size_t i) override;
 
 private:
 	void RenderSearch();

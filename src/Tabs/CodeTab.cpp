@@ -6,7 +6,10 @@
 #include <Helpers/CodeButton.h>
 #include <Helpers/DataButton.h>
 #include <Helpers/PointerText.h>
+#include <Helpers/ImGuiString.h>
+#include <Helpers/Expression.h>
 #include <Tabs/StringsTab.h>
+#include <Tabs/CodeResultsTab.h>
 #include <Chrono.h>
 
 #include <hello_imgui.h>
@@ -71,8 +74,8 @@ void CodeTab::RenderMenu(float dt)
 
 						if (handle->IsReadableMemory(operandValue) && MemoryValidator::String(handle, operandValue)) {
 							auto& newResult = stringsTab->m_results.add();
-							newResult.m_code = address;
-							newResult.m_string = operandValue;
+							newResult.m_address = address;
+							newResult.m_value = operandValue;
 						}
 					}
 
@@ -83,15 +86,82 @@ void CodeTab::RenderMenu(float dt)
 				auto tmDuration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tmStart).count();
 				printf("Done searching referenced strings in %.02f milliseconds\n", tmDuration / 1000.0f);
 			})->Then([stringsTab](Task*) {
-				stringsTab->SearchFinished();
+				stringsTab->TaskFinished();
 			});
 		}
+
+		if (ImGui::MenuItem("Constant...")) {
+			m_ui_findConstantPopupShow = true;
+		}
+
 		ImGui::EndMenu();
 	}
 }
 
 void CodeTab::Render(float dt)
 {
+	if (m_ui_findConstantPopupShow) {
+		ImGui::OpenPopup("FindConstantPopup");
+		m_ui_findConstantPopupShow = false;
+	}
+	if (ImGui::BeginPopup("FindConstantPopup")) {
+		if (ImGui::IsWindowAppearing()) {
+			ImGui::SetKeyboardFocusHere();
+		}
+		if (Helpers::InputText("Value", &m_ui_findConstantValueString, ImGuiInputTextFlags_EnterReturnsTrue)) {
+			uintptr_t value = Helpers::EvaluateExpression(m_ui_findConstantValueString);
+
+			auto handle = m_inspector->m_processHandle;
+			auto region = m_region;
+			auto decoder = m_decoder;
+
+			auto newTab = new CodeResultsTab(m_inspector, "Constants");
+			m_inspector->m_tabs.add(newTab);
+
+			newTab->m_task = m_inspector->m_tasks.Run([value, handle, region, decoder, newTab](Task* task) {
+				uintptr_t offset = 0;
+				uint8_t buffer[MAX_INSTRUCTION_SIZE];
+
+				auto tmStart = std::chrono::high_resolution_clock::now();
+
+				while (offset < region.Size()) {
+					uintptr_t address = region.m_start + offset;
+
+					size_t bytesRead = handle->ReadMemory(address, buffer, sizeof(buffer));
+					if (bytesRead == 0) {
+						break;
+					}
+
+					ZydisDecodedInstruction instr;
+					if (!ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&decoder, buffer, sizeof(buffer), &instr))) {
+						offset++;
+						continue;
+					}
+
+					// Go through all instruction operands and find the constant we want
+					for (uint8_t j = 0; j < instr.operand_count; j++) {
+						if (GetOperandValue(instr, j, address) == value) {
+							auto& newResult = newTab->m_results.add();
+							newResult.m_address = address;
+						}
+					}
+
+					offset += instr.length;
+					task->m_progress = (float)(offset / (double)region.Size());
+				}
+
+				auto tmDuration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tmStart).count();
+				printf("Done searching for constant in %.02f milliseconds\n", tmDuration / 1000.0f);
+			})->Then([newTab](Task*) {
+				newTab->TaskFinished();
+			});
+
+			m_ui_findConstantValueString = "";
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
 	m_lineDetails.ensure_memory(m_itemsPerPage + 1);
 	while (m_lineDetails.len() < m_itemsPerPage + 1) {
 		m_lineDetails.add();

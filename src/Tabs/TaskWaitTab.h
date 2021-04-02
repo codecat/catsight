@@ -13,7 +13,7 @@ public:
 	TaskWaitTab(Inspector* inspector, const s2::string& name);
 	virtual ~TaskWaitTab();
 
-	virtual void SearchFinished();
+	virtual void TaskFinished();
 
 	virtual bool CanClose() override;
 

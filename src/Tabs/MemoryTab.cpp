@@ -5,6 +5,7 @@
 #include <Helpers/CodeButton.h>
 #include <Helpers/DataButton.h>
 #include <Helpers/ImGuiString.h>
+#include <Helpers/Expression.h>
 
 #include <hello_imgui.h>
 
@@ -189,8 +190,7 @@ bool MemoryTab::RenderBegin(float dt)
 
 		uintptr_t gotoPointer = 0;
 		if (m_ui_gotoAddressString.len() > 0) {
-			//TODO: This could be parser as an expression instead (with numbers being hex w/o 0x prefix)
-			sscanf(m_ui_gotoAddressString, "%llx", &gotoPointer);
+			gotoPointer = Helpers::EvaluateExpression(m_ui_gotoAddressString);
 
 			bool valid = m_inspector->m_processHandle->IsReadableMemory(gotoPointer);
 			if (!valid) {
@@ -200,6 +200,8 @@ bool MemoryTab::RenderBegin(float dt)
 			if (!valid) {
 				ImGui::PopStyleColor();
 			}
+
+			//TODO: Try to resolve and render value of pointer here
 		}
 
 		if (actuallyGo) {

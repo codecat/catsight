@@ -12,7 +12,7 @@ TaskWaitTab::~TaskWaitTab()
 {
 }
 
-void TaskWaitTab::SearchFinished()
+void TaskWaitTab::TaskFinished()
 {
 	m_task = nullptr;
 }

@@ -43,6 +43,8 @@ hello_imgui_add_app(catsight
 	src/Tabs/DataTab.cpp
 	src/Tabs/CodeTab.cpp
 	src/Tabs/TaskWaitTab.cpp
+	src/Tabs/ResultsTab.cpp
+	src/Tabs/CodeResultsTab.cpp
 	src/Tabs/StringsTab.cpp
 
 	src/Helpers/MemoryValidator.cpp
@@ -51,6 +53,7 @@ hello_imgui_add_app(catsight
 	src/Helpers/PointerText.cpp
 	src/Helpers/ImGuiString.cpp
 	src/Helpers/TypeRenderer.cpp
+	src/Helpers/Expression.cpp
 )
 
 include_directories(

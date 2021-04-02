@@ -8,7 +8,7 @@
 #include <hello_imgui.h>
 
 StringsTab::StringsTab(Inspector* inspector, const s2::string& name)
-	: TaskWaitTab(inspector, name)
+	: CodeResultsTab(inspector, name)
 {
 	m_results.ensure_memory(10000);
 }
@@ -24,53 +24,40 @@ s2::string StringsTab::GetLabel()
 
 void StringsTab::Render(float dt)
 {
-	TaskWaitTab::Render(dt);
-
 	RenderSearch();
-	bool hasFilter = (m_search.len() > 0);
 
-	ImGui::BeginChild("Items");
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 0));
+	CodeResultsTab::Render(dt);
+}
 
-	int numItems = (int)m_results.len();
-	if (hasFilter) {
-		numItems = (int)m_filterIndices.len();
+void StringsTab::RenderResult(const Result& result)
+{
+	CodeResultsTab::RenderResult(result);
+
+	ImGui::SameLine(500.0f);
+
+	s2::string str;
+	m_inspector->m_processHandle->ReadCString(result.m_value, str);
+	str = str.replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t");
+
+	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
+	ImGui::Text("\"%s\"", str.c_str());
+	ImGui::PopStyleColor();
+}
+
+size_t StringsTab::GetNumResults()
+{
+	if (m_search.len() > 0) {
+		return m_filterIndices.len();
 	}
+	return m_results.len();
+}
 
-	ImGuiListClipper clipper;
-	clipper.Begin(numItems);
-	while (clipper.Step()) {
-		for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
-			auto& result = hasFilter ? m_results[m_filterIndices[i]] : m_results[i];
-
-			ImGui::PushID(i);
-
-			s2::string str;
-			m_inspector->m_processHandle->ReadCString(result.m_string, str);
-			str = str.replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t");
-
-			Helpers::CodeButton(m_inspector, result.m_code);
-
-			ImGui::SameLine();
-
-			ImGui::PushFont(Resources::FontMono);
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(.5f, .5f, .5f, 1));
-			ImGui::Text(POINTER_FORMAT, result.m_code);
-			ImGui::PopStyleColor();
-			ImGui::PopFont();
-
-			ImGui::SameLine();
-
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
-			ImGui::Text("\"%s\"", str.c_str());
-			ImGui::PopStyleColor();
-
-			ImGui::PopID();
-		}
+const StringsTab::Result& StringsTab::GetResult(size_t i)
+{
+	if (m_search.len() > 0) {
+		return m_results[m_filterIndices[i]];
 	}
-
-	ImGui::PopStyleVar();
-	ImGui::EndChild();
+	return m_results[i];
 }
 
 void StringsTab::RenderSearch()
@@ -91,7 +78,7 @@ void StringsTab::RenderSearch()
 
 	if (m_filterIndices.len() > 0 && m_search.len() > prevSearchLen) {
 		for (int i = (int)m_filterIndices.len() - 1; i >= 0; i--) {
-			m_inspector->m_processHandle->ReadCString(m_results[m_filterIndices[i]].m_string, str);
+			m_inspector->m_processHandle->ReadCString(m_results[m_filterIndices[i]].m_value, str);
 			if (!str.contains_nocase(m_search)) {
 				m_filterIndices.remove(i);
 			}
@@ -101,7 +88,7 @@ void StringsTab::RenderSearch()
 
 	m_filterIndices.clear();
 	for (int i = 0; i < (int)m_results.len(); i++) {
-		m_inspector->m_processHandle->ReadCString(m_results[i].m_string, str);
+		m_inspector->m_processHandle->ReadCString(m_results[i].m_value, str);
 		if (str.contains_nocase(m_search)) {
 			m_filterIndices.add(i);
 		}
