@@ -6,7 +6,7 @@
 
 #include <hello_imgui.h>
 
-void Helpers::PointerText(Inspector* inspector, uintptr_t p)
+void Helpers::PointerText(Inspector* inspector, uintptr_t p, const PointerMenuCallback& menuCallback)
 {
 	ImGui::PushID((void*)p);
 
@@ -32,6 +32,11 @@ void Helpers::PointerText(Inspector* inspector, uintptr_t p)
 				mapsTab->ShowRegionPointer(p);
 				mapsTab->m_shouldFocus = true;
 			}
+		}
+
+		if (menuCallback != nullptr) {
+			ImGui::Separator();
+			menuCallback(p);
 		}
 
 		ImGui::EndPopup();

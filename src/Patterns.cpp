@@ -1,5 +1,6 @@
 #include <Common.h>
 #include <Patterns.h>
+#include <Disassembler.h>
 
 struct PatternByte
 {
@@ -81,4 +82,68 @@ void Patterns::Find(ProcessHandle* handle, const char* pattern, const Callback& 
 	for (auto& region : regions) {
 		Find(handle, pattern, callback, task, region);
 	}
+}
+
+s2::string Patterns::Generate(ProcessHandle* handle, uintptr_t address, const ProcessMemoryRegion& region)
+{
+	s2::string ret;
+
+	Disassembler disasm;
+
+	uintptr_t p = address;
+	int finds = 0;
+
+	int byteCount = 0;
+
+	do {
+		do {
+			// Read memory
+			uint8_t buffer[MAX_INSTRUCTION_SIZE];
+			size_t bufferSize = handle->ReadMemory(p, buffer, sizeof(buffer));
+			if (bufferSize == 0) {
+				break;
+			}
+
+			// Decode instruction
+			ZydisDecodedInstruction instr;
+			if (!disasm.Decode(instr, buffer, bufferSize)) {
+				printf("Invalid assembly detected at " POINTER_FORMAT "!\n");
+				break;
+			}
+
+			// Increment instruction pointer for next iteration
+			p += instr.length;
+
+			// Count the bytes
+			byteCount += instr.length;
+
+			// Get instruction byte groups and "real" length (excluding offset operands)
+			auto groups = disasm.GetByteGroups(instr);
+			size_t realLength = groups.m_sizePrefix + groups.m_sizeOpcode;
+
+			// Write pattern to string
+			for (size_t i = 0; i < instr.length; i++) {
+				if (i < realLength) {
+					ret.appendf("%02X", buffer[i]);
+				} else {
+					ret += "??";
+				}
+				ret.append(' ');
+			}
+		} while (byteCount < 5);
+
+		// Stop if we reached too many bytes
+		if (byteCount > 150) {
+			printf("Stopping pattern generation prematurely because %d bytes were reached!\n", byteCount);
+			break;
+		}
+
+		// Count the amount of results
+		finds = 0;
+		Find(handle, ret, [&finds](uintptr_t) { finds++; }, nullptr, region);
+	} while (finds > 1);
+
+	assert(finds == 1);
+
+	return ret.trim(" ?");
 }

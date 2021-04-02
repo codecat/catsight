@@ -8,9 +8,6 @@
 CodeResultsTab::CodeResultsTab(Inspector* inspector, const s2::string& id)
 	: ResultsTab(inspector, id)
 {
-	//TODO: Different parameters for 32 bit
-	ZydisDecoderInit(&m_decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_ADDRESS_WIDTH_64);
-	ZydisFormatterInit(&m_formatter, ZYDIS_FORMATTER_STYLE_INTEL);
 }
 
 CodeResultsTab::~CodeResultsTab()
@@ -32,13 +29,8 @@ void CodeResultsTab::RenderResult(const Result& result)
 
 	ImGui::SameLine();
 
-	uint8_t buffer[MAX_INSTRUCTION_SIZE];
-	m_inspector->m_processHandle->ReadMemory(result.m_address, buffer, sizeof(buffer));
-
 	ZydisDecodedInstruction instr;
-	if (ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&m_decoder, buffer, sizeof(buffer), &instr))) {
-		char instructionText[256] = "??";
-		ZydisFormatterFormatInstruction(&m_formatter, &instr, instructionText, sizeof(instructionText), result.m_address);
-		ImGui::TextUnformatted(instructionText);
+	if (m_disasm.Decode(instr, m_inspector->m_processHandle, result.m_address)) {
+		ImGui::TextUnformatted(m_disasm.Format(instr, result.m_address));
 	}
 }

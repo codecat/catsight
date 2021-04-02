@@ -2,8 +2,7 @@
 
 #include <Common.h>
 #include <Tabs/MemoryTab.h>
-
-#include <Zydis/Zydis.h>
+#include <Disassembler.h>
 
 class CodeTab : public MemoryTab
 {
@@ -11,8 +10,7 @@ private:
 	uintptr_t m_baseOffset = 0;
 	bool m_hasBaseOffset = false;
 
-	ZydisDecoder m_decoder;
-	ZydisFormatter m_formatter;
+	Disassembler m_disasm;
 
 	struct LineDetails
 	{

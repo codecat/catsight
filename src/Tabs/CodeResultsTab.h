@@ -2,14 +2,12 @@
 
 #include <Common.h>
 #include <Tabs/ResultsTab.h>
-
-#include <Zydis/Zydis.h>
+#include <Disassembler.h>
 
 class CodeResultsTab : public ResultsTab
 {
 private:
-	ZydisDecoder m_decoder;
-	ZydisFormatter m_formatter;
+	Disassembler m_disasm;
 
 public:
 	CodeResultsTab(Inspector* inspector, const s2::string& id);

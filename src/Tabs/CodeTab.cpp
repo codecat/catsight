@@ -22,10 +22,6 @@
 CodeTab::CodeTab(Inspector* inspector, const s2::string& id, uintptr_t p)
 	: MemoryTab(inspector, id, p)
 {
-	//TODO: Different parameters for 32 bit
-	ZydisDecoderInit(&m_decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_ADDRESS_WIDTH_64);
-	ZydisFormatterInit(&m_formatter, ZYDIS_FORMATTER_STYLE_INTEL);
-
 	m_showScrollBar = false;
 }
 
@@ -46,27 +42,21 @@ void CodeTab::RenderMenu(float dt)
 		if (ImGui::MenuItem("All referenced strings")) {
 			auto handle = m_inspector->m_processHandle;
 			auto region = m_region;
-			auto decoder = m_decoder;
 
 			auto stringsTab = new StringsTab(m_inspector, "Strings");
 			m_inspector->m_tabs.add(stringsTab);
 
-			stringsTab->m_task = m_inspector->m_tasks.Run([handle, region, decoder, stringsTab](Task* task) {
+			stringsTab->m_task = m_inspector->m_tasks.Run([handle, region, stringsTab](Task* task) {
+				Disassembler disasm;
 				uintptr_t offset = 0;
-				uint8_t buffer[MAX_INSTRUCTION_SIZE];
 
 				auto tmStart = std::chrono::high_resolution_clock::now();
 
 				while (offset < region.Size()) {
 					uintptr_t address = region.m_start + offset;
 
-					size_t bytesRead = handle->ReadMemory(address, buffer, sizeof(buffer));
-					if (bytesRead == 0) {
-						break;
-					}
-
 					ZydisDecodedInstruction instr;
-					if (!ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&decoder, buffer, sizeof(buffer), &instr))) {
+					if (!disasm.Decode(instr, handle, address)) {
 						offset++;
 						continue;
 					}
@@ -121,27 +111,21 @@ void CodeTab::Render(float dt)
 
 			auto handle = m_inspector->m_processHandle;
 			auto region = m_region;
-			auto decoder = m_decoder;
 
 			auto newTab = new CodeResultsTab(m_inspector, "Constants");
 			m_inspector->m_tabs.add(newTab);
 
-			newTab->m_task = m_inspector->m_tasks.Run([value, handle, region, decoder, newTab](Task* task) {
+			newTab->m_task = m_inspector->m_tasks.Run([value, handle, region, newTab](Task* task) {
+				Disassembler disasm;
 				uintptr_t offset = 0;
-				uint8_t buffer[MAX_INSTRUCTION_SIZE];
 
 				auto tmStart = std::chrono::high_resolution_clock::now();
 
 				while (offset < region.Size()) {
 					uintptr_t address = region.m_start + offset;
 
-					size_t bytesRead = handle->ReadMemory(address, buffer, sizeof(buffer));
-					if (bytesRead == 0) {
-						break;
-					}
-
 					ZydisDecodedInstruction instr;
-					if (!ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&decoder, buffer, sizeof(buffer), &instr))) {
+					if (!disasm.Decode(instr, handle, address)) {
 						offset++;
 						continue;
 					}
@@ -229,7 +213,14 @@ void CodeTab::Render(float dt)
 
 		ImGui::PushID((void*)address);
 
-		Helpers::PointerText(m_inspector, address);
+		auto region = m_region;
+		Helpers::PointerText(m_inspector, address, [handle, region](uintptr_t p) {
+			if (ImGui::MenuItem("Generate pattern")) {
+				auto pattern = Patterns::Generate(handle, p, region);
+				printf("Generated pattern: \"%s\"\n", pattern.c_str());
+				ImGui::SetClipboardText(pattern);
+			}
+		});
 		ImGui::SameLine();
 
 		float column = 130.0f;
@@ -270,7 +261,7 @@ void CodeTab::Render(float dt)
 
 		// Decode instruction
 		ZydisDecodedInstruction instr;
-		bool valid = ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&m_decoder, buffer, bufferSize, &instr));
+		bool valid = m_disasm.Decode(instr, buffer, bufferSize);
 		size_t instrSize = valid ? instr.length : 1;
 		bytesOffset += instrSize;
 
@@ -289,24 +280,20 @@ void CodeTab::Render(float dt)
 		ImGui::PushStyleColor(ImGuiCol_Text, color);
 
 		// Show instruction bytes
-		size_t sizePrefix = instr.raw.prefix_count;
-		size_t sizeGroup1 = instr.raw.disp.size / 8;
-		size_t sizeGroup2 = instr.raw.imm[0].size / 8;
-		size_t sizeGroup3 = instr.raw.imm[1].size / 8;
-		size_t sizeOpcode = instr.length - sizePrefix - sizeGroup1 - sizeGroup2 - sizeGroup3;
+		auto groups = m_disasm.GetByteGroups(instr);
 
 		s2::string strBytes;
 		for (size_t j = 0; j < instrSize; j++) {
 			if (j > 0) {
-				if (j == sizePrefix) {
+				if (j == groups.m_sizePrefix) {
 					strBytes.append(':');
-				} else if (j == sizePrefix + sizeOpcode) {
+				} else if (j == groups.m_sizePrefix + groups.m_sizeOpcode) {
 					strBytes.append(' ');
-				} else if (j == sizePrefix + sizeOpcode + sizeGroup1) {
+				} else if (j == groups.m_sizePrefix + groups.m_sizeOpcode + groups.m_sizeGroup1) {
 					strBytes.append(' ');
-				} else if (j == sizePrefix + sizeOpcode + sizeGroup1 + sizeGroup2) {
+				} else if (j == groups.m_sizePrefix + groups.m_sizeOpcode + groups.m_sizeGroup1 + groups.m_sizeGroup2) {
 					strBytes.append(' ');
-				} else if (j == sizePrefix + sizeOpcode + sizeGroup1 + sizeGroup2 + sizeGroup3) {
+				} else if (j == groups.m_sizePrefix + groups.m_sizeOpcode + groups.m_sizeGroup1 + groups.m_sizeGroup2 + groups.m_sizeGroup3) {
 					strBytes.append(' ');
 				}
 			}
@@ -324,12 +311,7 @@ void CodeTab::Render(float dt)
 		instructionPos.y += m_itemHeight / 2 - 0.5f;
 
 		// Show formatted instruction text
-		char instructionText[256] = "??";
-		if (valid) {
-			ZydisFormatterFormatInstruction(&m_formatter, &instr, instructionText, sizeof(instructionText), address);
-		}
-
-		ImGui::Text("%s", instructionText);
+		ImGui::TextUnformatted(m_disasm.Format(instr, address));
 		ImGui::PopStyleColor();
 
 		ImGui::PopFont();
@@ -351,17 +333,13 @@ void CodeTab::Render(float dt)
 
 							//TODO: Support backwards jumps
 							if (jumpOffsetBytes > 0) {
-								uint8_t buffer[MAX_INSTRUCTION_SIZE];
-
 								line.m_jumpsLines = 0;
 								line.m_depth = ++lineDepth;
 								int ip = 0;
 
 								while (ip < jumpOffsetBytes) {
-									handle->ReadMemory(address + ip, buffer, sizeof(buffer));
-
 									ZydisDecodedInstruction instr;
-									if (!ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&m_decoder, buffer, sizeof(buffer), &instr))) {
+									if (!m_disasm.Decode(instr, handle, address + ip)) {
 										break;
 									}
 
@@ -409,11 +387,8 @@ intptr_t CodeTab::GetScrollAmount(int wheel)
 		// Scroll down
 		int bytesOffset = 0;
 		for (int i = 0; i < numInstructions; i++) {
-			uint8_t buffer[MAX_INSTRUCTION_SIZE];
-			size_t bufferSize = m_inspector->m_processHandle->ReadMemory(address + bytesOffset, buffer, sizeof(buffer));
-
 			ZydisDecodedInstruction instr;
-			if (ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&m_decoder, buffer, bufferSize, &instr))) {
+			if (m_disasm.Decode(instr, m_inspector->m_processHandle, address + bytesOffset)) {
 				bytesOffset += instr.length;
 			} else {
 				bytesOffset++;
@@ -474,7 +449,7 @@ uintptr_t CodeTab::DisassembleBack(const uint8_t* data, size_t size, uintptr_t i
 
 		uintptr_t length = 2;
 		ZydisDecodedInstruction instr;
-		if (ZYAN_SUCCESS(ZydisDecoderDecodeBuffer(&m_decoder, pdata, size, &instr))) {
+		if (m_disasm.Decode(instr, pdata, size)) {
 			length = instr.length;
 		}
 
