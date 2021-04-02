@@ -10,13 +10,16 @@ Cross-platform process memory viewer inspired by x64dbg.
 
 ## Screenshots
 ### Data tab
-![](https://missdev.nl/catsight2.png)
+![](https://missdev.nl/catsight4.png)
 
 ### Code tab
-![](https://missdev.nl/catsight1.png)
+![](https://missdev.nl/catsight5.png)
 
 ### Maps tab
-![](https://missdev.nl/catsight3.png)
+![](https://missdev.nl/catsight6.png)
+
+### String search
+![](https://missdev.nl/catsight7.png)
 
 ## What this isn't
 This is not a debugger. (At least, not yet.) It was not designed with debugging in mind, it is merely a process memory viewer.
