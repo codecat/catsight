@@ -153,15 +153,34 @@ void DataTab::Render(float dt)
 		uintptr_t value = 0;
 		if (m_inspector->m_processHandle->ReadMemory(address, &value, sizeof(value)) == sizeof(value)) {
 			ImGui::PushFont(Resources::FontMono);
+
 			if (value == 0) {
 				ImGui::TextDisabled(POINTER_FORMAT, value);
 			} else {
 				ImGui::Text(POINTER_FORMAT, value);
 			}
+
+			ImGui::SameLine();
+
+			for (int i = 0; i < sizeof(uintptr_t); i++) {
+				int shift = i * 8;
+				uint8_t byteValue = (value & ((uintptr_t)0xFF << shift)) >> shift;
+
+				if (i > 0) {
+					ImGui::SameLine(0, 0);
+				}
+
+				if (byteValue >= 32 && byteValue <= 126) {
+					ImGui::Text("%c", byteValue);
+				} else {
+					ImGui::TextDisabled(".");
+				}
+			}
+
 			ImGui::PopFont();
 		}
 
-		column += 120;
+		column += 240;
 		ImGui::SameLine(column);
 
 		while (currentMemberSize < sizeof(uintptr_t)) {
