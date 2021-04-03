@@ -40,13 +40,14 @@ void CodeTab::RenderMenu(float dt)
 
 	if (ImGui::BeginMenu("Find")) {
 		if (ImGui::MenuItem("All referenced strings")) {
+			auto inspector = m_inspector;
 			auto handle = m_inspector->m_processHandle;
 			auto region = m_region;
 
 			auto stringsTab = new StringsTab(m_inspector, "Strings");
 			m_inspector->m_tabs.add(stringsTab);
 
-			stringsTab->m_task = m_inspector->m_tasks.Run([handle, region, stringsTab](Task* task) {
+			stringsTab->m_task = m_inspector->m_tasks.Run([inspector, handle, region, stringsTab](Task* task) {
 				Disassembler disasm;
 				uintptr_t offset = 0;
 
@@ -65,11 +66,27 @@ void CodeTab::RenderMenu(float dt)
 					for (uint8_t j = 0; j < instr.operand_count; j++) {
 						uintptr_t operandValue = GetOperandValue(instr, j, address);
 
-						if (handle->IsReadableMemory(operandValue) && MemoryValidator::String(handle, operandValue)) {
-							auto& newResult = stringsTab->m_results.add();
-							newResult.m_address = address;
-							newResult.m_value = operandValue;
+						if (!handle->IsReadableMemory(operandValue)) {
+							continue;
 						}
+
+						ProcessMemoryRegion region;
+						if (!inspector->GetMemoryRegion(operandValue, region)) {
+							continue;
+						}
+
+						// Don't include anything from executable regions as they are likely not actually strings
+						if (region.IsExecute()) {
+							continue;
+						}
+
+						if (!MemoryValidator::String(handle, operandValue)) {
+							continue;
+						}
+
+						auto& newResult = stringsTab->m_results.add();
+						newResult.m_address = address;
+						newResult.m_value = operandValue;
 					}
 
 					offset += instr.length;
