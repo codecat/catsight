@@ -3,6 +3,7 @@
 #include <System.h>
 
 #include <Tabs/MapsTab.h>
+#include <Tabs/ConsoleTab.h>
 #include <Tabs/DataTab.h>
 
 #include <hello_imgui.h>
@@ -13,6 +14,7 @@ Inspector::Inspector(const ProcessInfo& info)
 	m_title = m_processInfo.filename;
 	m_processHandle = System::OpenProcessHandle(info);
 
+	m_tabs.add(new ConsoleTab(this, "Console"));
 	m_tabs.add(new MapsTab(this, "Maps"));
 
 	m_processRegions = m_processHandle->GetMemoryRegions();

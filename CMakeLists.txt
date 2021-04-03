@@ -43,6 +43,7 @@ hello_imgui_add_app(catsight
 	src/Tab.cpp
 
 	src/Tabs/MapsTab.cpp
+	src/Tabs/ConsoleTab.cpp
 	src/Tabs/MemoryTab.cpp
 	src/Tabs/DataTab.cpp
 	src/Tabs/CodeTab.cpp
@@ -58,6 +59,9 @@ hello_imgui_add_app(catsight
 	src/Helpers/ImGuiString.cpp
 	src/Helpers/TypeRenderer.cpp
 	src/Helpers/Expression.cpp
+
+	src/Script/Engine.cpp
+	src/Script/Types/Pointer.cpp
 )
 
 include_directories(
@@ -70,7 +74,7 @@ include_directories(
 
 target_link_libraries(catsight PUBLIC
 	Zydis
-	sol2
+	lua
 )
 
 if(WIN32)

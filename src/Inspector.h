@@ -5,6 +5,7 @@
 #include <System/ProcessHandle.h>
 #include <Tasks/Tasks.h>
 #include <Tab.h>
+#include <Script/Engine.h>
 
 class Inspector
 {
@@ -21,6 +22,8 @@ public:
 	s2::list<ProcessMemoryRegion> m_processRegions;
 
 	s2::list<Tab*> m_tabs;
+
+	Script::Engine m_script;
 
 public:
 	Inspector(const ProcessInfo& info);
