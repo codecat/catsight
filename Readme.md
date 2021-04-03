@@ -7,6 +7,7 @@ Cross-platform process memory viewer inspired by x64dbg.
 * Look at all the mapped pages of memory.
 * Browse and scroll through the memory of any process as an address table.
 * Disassemble code in memory regions and jump between references.
+* Byte pattern searching and generation in code sections.
 
 ## Screenshots
 ### Data tab
