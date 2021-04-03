@@ -7,15 +7,13 @@
 #  include <Windows.h>
 #endif
 
-void do_something()
+static void do_something()
 {
 	printf("Something!\n");
 }
 
-int main()
+static void make_test_page()
 {
-	srand(time(nullptr));
-
 	// Create test memory page
 	const size_t testMemSize = 0x1000000;
 #if defined(PLATFORM_LINUX)
@@ -30,7 +28,7 @@ int main()
 	for (int i = 2; i <= 6; i++) {
 		testMem[i] = (uintptr_t)(testMem + i + 1);
 	}
-	testMem[6] = (uintptr_t)&main;
+	testMem[6] = (uintptr_t)&make_test_page;
 
 	testMem[10] = (uintptr_t)"Pointer chain to float";
 	for (int i = 10; i <= 14; i++) {
@@ -47,6 +45,11 @@ int main()
 	for (int i = 1; i < 5; i++) {
 		floatArray[i] = 1.0f * (i / 2.0f);
 	}
+}
+
+int main()
+{
+	make_test_page();
 
 	// Initialize and run application
 	Explorer::Instance = new Explorer();
