@@ -15,6 +15,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${HELLOIMGUI_BASEPATH}/hello_imgui_cm
 
 add_subdirectory(external/sol2)
 
+include(FindLua)
+find_package(Lua REQUIRED)
+
 include(hello_imgui_add_app)
 hello_imgui_add_app(catsight
 	src/main.cpp
@@ -70,11 +73,12 @@ include_directories(
 	external/glm/
 	external/zydis/include
 	external/sol2/include
+	${LUA_INCLUDE_DIR}
 )
 
 target_link_libraries(catsight PUBLIC
 	Zydis
-	lua
+	${LUA_LIBRARIES}
 )
 
 if(WIN32)
