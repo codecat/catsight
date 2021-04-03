@@ -107,7 +107,7 @@ s2::string Patterns::Generate(ProcessHandle* handle, uintptr_t address, const Pr
 			// Decode instruction
 			ZydisDecodedInstruction instr;
 			if (!disasm.Decode(instr, buffer, bufferSize)) {
-				printf("Invalid assembly detected at " POINTER_FORMAT "!\n");
+				printf("Invalid assembly detected at " POINTER_FORMAT "!\n", p);
 				break;
 			}
 
