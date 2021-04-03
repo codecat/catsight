@@ -18,6 +18,11 @@ MapsTab::~MapsTab()
 {
 }
 
+const char* MapsTab::GetTitlePrefix()
+{
+	return ICON_FA_MAP;
+}
+
 bool MapsTab::CanClose()
 {
 	return false;
