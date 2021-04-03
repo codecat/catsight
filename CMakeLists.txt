@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 project(catsight LANGUAGES C CXX)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/glfw)
