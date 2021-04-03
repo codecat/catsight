@@ -13,3 +13,6 @@
 [submodule "external/glfw"]
 	path = external/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "external/sol2"]
+	path = external/sol2
+	url = https://github.com/ThePhD/sol2.git
