@@ -13,6 +13,8 @@ set(HELLOIMGUI_USE_GLFW_OPENGL3 ON CACHE BOOL "" FORCE)
 add_subdirectory(external/hello_imgui)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${HELLOIMGUI_BASEPATH}/hello_imgui_cmake)
 
+add_subdirectory(external/sol2)
+
 include(hello_imgui_add_app)
 hello_imgui_add_app(catsight
 	src/main.cpp
@@ -59,13 +61,17 @@ hello_imgui_add_app(catsight
 )
 
 include_directories(
-	external/scratch2/scratch2/
+	src/
+	external/scratch2/scratch2
 	external/glm/
 	external/zydis/include
-	src/
+	external/sol2/include
 )
 
-target_link_libraries(catsight PUBLIC Zydis)
+target_link_libraries(catsight PUBLIC
+	Zydis
+	sol2
+)
 
 if(WIN32)
 	add_definitions(-DPLATFORM_WINDOWS -DWIN32_LEAN_AND_MEAN)
