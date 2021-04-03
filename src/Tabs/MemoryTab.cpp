@@ -191,7 +191,7 @@ bool MemoryTab::RenderBegin(float dt)
 		if (ImGui::IsWindowAppearing()) {
 			ImGui::SetKeyboardFocusHere();
 		}
-		bool actuallyGo = Helpers::InputText("Address", &m_ui_gotoAddressString, ImGuiInputTextFlags_EnterReturnsTrue);
+		bool actuallyGo = Helpers::InputText("Address", &m_ui_gotoAddressString, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsHexadecimal);
 
 		uintptr_t gotoPointer = 0;
 		if (m_ui_gotoAddressString.len() > 0) {
