@@ -125,11 +125,14 @@ void MapsTab::Render(float dt)
 
 				ImGui::TableSetColumnIndex(2);
 				if (map.IsExecute()) {
-					uintptr_t codePointer = map.m_start;
-					if (map.m_entryPoint != 0) {
-						codePointer = map.m_entryPoint;
+					Helpers::CodeButton(m_inspector, map.m_start);
+
+					ProcessMemoryRegion entryPointRegion;
+					if (map.m_entryPoint != 0 && m_inspector->GetMemoryRegion(map.m_entryPoint, entryPointRegion) && entryPointRegion.IsExecute()) {
+						ImGui::SameLine();
+						Helpers::CodeButton(m_inspector, map.m_entryPoint, map == entryPointRegion ? 0 : 1);
 					}
-					Helpers::CodeButton(m_inspector, codePointer);
+
 					ImGui::SameLine();
 				}
 				Helpers::DataButton(m_inspector, map.m_start);

@@ -29,4 +29,7 @@ struct ProcessMemoryRegion
 	bool IsWrite() const;
 	bool IsExecute() const;
 	bool IsProtect() const;
+
+	bool operator ==(const ProcessMemoryRegion& other) const;
+	bool operator !=(const ProcessMemoryRegion& other) const;
 };
