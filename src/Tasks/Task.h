@@ -12,6 +12,7 @@ public:
 
 public:
 	std::atomic<float> m_progress;
+	std::atomic<float> m_durationMilliseconds;
 	void* m_userdata = nullptr;
 
 private:

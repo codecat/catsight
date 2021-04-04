@@ -29,6 +29,7 @@ void TaskWaitTab::BeginTask(const Task::Func& func, void* userdata)
 
 void TaskWaitTab::TaskFinished()
 {
+	m_taskDuration = m_task->m_durationMilliseconds;
 	m_task = nullptr;
 }
 
@@ -45,5 +46,7 @@ void TaskWaitTab::Render(float dt)
 		}
 		ImGui::SameLine();
 		ImGui::ProgressBar(m_task->m_progress);
+	} else {
+		ImGui::Text("(Task duration: %g ms)", m_taskDuration);
 	}
 }

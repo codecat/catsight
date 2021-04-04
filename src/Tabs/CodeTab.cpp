@@ -17,8 +17,6 @@
 
 #include <hello_imgui.h>
 
-#include <chrono>
-
 CodeTab::CodeTab(Inspector* inspector, const s2::string& id, uintptr_t p)
 	: MemoryTab(inspector, id, p)
 {
@@ -50,8 +48,6 @@ void CodeTab::RenderMenu(float dt)
 			stringsTab->BeginTask([inspector, handle, region, stringsTab](Task* task) {
 				Disassembler disasm;
 				uintptr_t offset = 0;
-
-				auto tmStart = std::chrono::high_resolution_clock::now();
 
 				while (!task->IsCanceled() && offset < region.Size()) {
 					uintptr_t address = region.m_start + offset;
@@ -92,9 +88,6 @@ void CodeTab::RenderMenu(float dt)
 					offset += instr.length;
 					task->m_progress = (float)(offset / (double)region.Size());
 				}
-
-				auto tmDuration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tmStart).count();
-				printf("Done searching referenced strings in %.02f milliseconds\n", tmDuration / 1000.0f);
 			});
 		}
 
@@ -134,8 +127,6 @@ void CodeTab::Render(float dt)
 				Disassembler disasm;
 				uintptr_t offset = 0;
 
-				auto tmStart = std::chrono::high_resolution_clock::now();
-
 				while (!task->IsCanceled() && offset < region.Size()) {
 					uintptr_t address = region.m_start + offset;
 
@@ -156,9 +147,6 @@ void CodeTab::Render(float dt)
 					offset += instr.length;
 					task->m_progress = (float)(offset / (double)region.Size());
 				}
-
-				auto tmDuration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tmStart).count();
-				printf("Done searching for constant in %.02f milliseconds\n", tmDuration / 1000.0f);
 			});
 
 			m_ui_findConstantValueString = "";

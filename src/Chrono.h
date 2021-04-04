@@ -12,4 +12,5 @@ namespace Chrono
 	Time Now();
 
 	float DurationMilliseconds(Time a, Time b);
+	float MillisecondsSince(Time t);
 }

@@ -1,5 +1,6 @@
 #include <Common.h>
 #include <Tasks/Task.h>
+#include <Chrono.h>
 
 Task::Task(const Func& func, void* userdata)
 {
@@ -7,6 +8,7 @@ Task::Task(const Func& func, void* userdata)
 	m_userdata = userdata;
 
 	m_progress = 0.0f;
+	m_durationMilliseconds = 0.0f;
 }
 
 Task::~Task()
@@ -15,7 +17,9 @@ Task::~Task()
 
 void Task::RunSync()
 {
+	auto tmStart = Chrono::Now();
 	m_func(this);
+	m_durationMilliseconds = Chrono::MillisecondsSince(tmStart);
 }
 
 Task* Task::Then(const CallbackFunc& func)

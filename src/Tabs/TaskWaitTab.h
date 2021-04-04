@@ -9,6 +9,9 @@ class TaskWaitTab : public Tab
 public:
 	Task* m_task = nullptr;
 
+protected:
+	float m_taskDuration = 0.0f;
+
 public:
 	TaskWaitTab(Inspector* inspector, const s2::string& id);
 	virtual ~TaskWaitTab();
