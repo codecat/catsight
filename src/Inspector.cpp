@@ -2,8 +2,9 @@
 #include <Inspector.h>
 #include <System.h>
 
-#include <Tabs/MapsTab.h>
 #include <Tabs/ConsoleTab.h>
+#include <Tabs/MapsTab.h>
+#include <Tabs/ModulesTab.h>
 #include <Tabs/DataTab.h>
 
 #include <hello_imgui.h>
@@ -11,11 +12,13 @@
 Inspector::Inspector(const ProcessInfo& info)
 	: m_processInfo(info)
 {
-	m_title = m_processInfo.filename;
+	m_title = m_processInfo.pathExe;
 	m_processHandle = System::OpenProcessHandle(info);
 
 	m_tabs.add(new ConsoleTab(this, "Console"));
 	m_tabs.add(new MapsTab(this, "Maps"));
+	m_tabs.add(new ModulesTab(this, "Modules"));
+	m_tabs.top()->m_shouldFocus = true;
 
 	m_processRegions = m_processHandle->GetMemoryRegions();
 	if (m_processRegions.len() > 0) {
@@ -58,7 +61,7 @@ bool Inspector::GetMemoryRegion(uintptr_t p, ProcessMemoryRegion& region)
 
 void Inspector::Render(float dt)
 {
-	auto windowTitle = s2::strprintf("%s (%d, %s)###Inspector_%s", m_title.c_str(), m_processInfo.pid, m_processInfo.user.username.c_str(), m_processInfo.filename.c_str());
+	auto windowTitle = s2::strprintf("%s (%d, %s)###Inspector_%s", m_title.c_str(), m_processInfo.pid, m_processInfo.user.username.c_str(), m_processInfo.pathExe.c_str());
 
 	ImGui::SetNextWindowSize(ImVec2(1000, 800), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin(windowTitle, &m_isOpen, ImGuiWindowFlags_MenuBar)) {

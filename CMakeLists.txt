@@ -23,6 +23,7 @@ set(CATSIGHT_SOURCES
 	src/Common.cpp
 	src/System/ProcessHandle.cpp
 	src/System/ProcessMemoryRegion.cpp
+	src/System/ProcessInfo.cpp
 
 	src/Resources.cpp
 	src/Folder.cpp
@@ -39,6 +40,7 @@ set(CATSIGHT_SOURCES
 	src/Tab.cpp
 
 	src/Tabs/MapsTab.cpp
+	src/Tabs/ModulesTab.cpp
 	src/Tabs/ConsoleTab.cpp
 	src/Tabs/MemoryTab.cpp
 	src/Tabs/DataTab.cpp

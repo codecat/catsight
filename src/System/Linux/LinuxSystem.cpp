@@ -79,6 +79,7 @@ s2::list<ProcessInfo> System::GetProcesses()
 		}
 		linkBuffer[s] = '\0';
 
+		//TODO: Why is this here? This looks wrong! Do we need this on Linux for some reason?
 		for (ssize_t i = 0; i < s; i++) {
 			if (linkBuffer[i] == '\\') {
 				linkBuffer[i] = '/';
@@ -93,8 +94,9 @@ s2::list<ProcessInfo> System::GetProcesses()
 		}
 
 		auto& newProcess = ret.push();
-		newProcess.exe = linkBuffer;
-		newProcess.filename = linkBufferFilename;
+		newProcess.pathFull = linkBuffer;
+		newProcess.pathExe = linkBufferFilename;
+		newProcess.pathDir = s2::string(linkBuffer, newProc.pathFull.len() - newProc.pathExe.len() - 1);
 		newProcess.pid = pid;
 		newProcess.user = GetProcessUser(pid);
 	}

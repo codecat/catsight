@@ -5,11 +5,13 @@
 
 struct ProcessInfo
 {
-	s2::string exe;
-	s2::string filename;
+	s2::string pathFull;
+	s2::string pathExe;
+	s2::string pathDir;
+
 	int pid = -1;
 	UserInfo user;
 	uint64_t startTime = 0;
 
-	bool operator==(const ProcessInfo& other) { return other.pid == pid; }
+	bool operator==(const ProcessInfo& other) const;
 };

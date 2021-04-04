@@ -183,7 +183,7 @@ void Explorer::RenderMenu(float dt)
 					icon = ICON_FA_USER " ";
 				}
 
-				auto menuText = s2::strprintf("%s%s (%d, %s)", icon, proc.exe.c_str(), proc.pid, proc.user.username.c_str());
+				auto menuText = s2::strprintf("%s%s (%d, %s)", icon, proc.pathExe.c_str(), proc.pid, proc.user.username.c_str());
 				auto existingInspector = GetInspector(proc);
 
 				if (ImGui::MenuItem(menuText, nullptr, nullptr, existingInspector == nullptr)) {

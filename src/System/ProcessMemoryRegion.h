@@ -9,6 +9,10 @@ enum ProcessMemoryRegionFlags
 	pmrf_Write = (1 << 1),
 	pmrf_Execute = (1 << 2),
 	pmrf_Protect = (1 << 3),
+
+	pmrf_Image = (1 << 4),
+	pmrf_Mapped = (1 << 5),
+	pmrf_Private = (1 << 6),
 };
 
 struct ProcessMemoryRegion
