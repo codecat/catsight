@@ -39,13 +39,10 @@ int Tasks::GetActiveWorkerCount()
 	return ret;
 }
 
-Task* Tasks::Run(const Task::Func& func, void* userdata)
+void Tasks::Run(Task* task)
 {
-	auto newTask = new Task(func, userdata);
-	m_updateLock.lock();
-	m_queuedTasks.insert(0, newTask);
-	m_updateLock.unlock();
-	return newTask;
+	std::scoped_lock lock(m_updateLock);
+	m_queuedTasks.insert(0, task);
 }
 
 void Tasks::Update()

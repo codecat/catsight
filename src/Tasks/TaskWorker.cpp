@@ -38,21 +38,19 @@ void TaskWorker::GiveTask(Task* task)
 
 void TaskWorker::FindNewTask()
 {
-	m_tasks->m_updateLock.lock();
+	std::scoped_lock lock(m_tasks->m_updateLock);
 
 	if (m_tasks->m_queuedTasks.len() > 0) {
 		m_task = m_tasks->m_queuedTasks.pop();
 	} else {
 		m_task = nullptr;
 	}
-
-	m_tasks->m_updateLock.unlock();
 }
 
 void TaskWorker::Update()
 {
 	while (m_keepRunning) {
-		System::Sleep(50);
+		System::Sleep(30);
 
 		if (m_task == nullptr) {
 			FindNewTask();
@@ -63,9 +61,8 @@ void TaskWorker::Update()
 			task->RunSync();
 
 			if (task->HasCallback()) {
-				m_tasks->m_updateLock.lock();
+				std::scoped_lock lock(m_tasks->m_updateLock);
 				m_tasks->m_finishedTasks.add(task);
-				m_tasks->m_updateLock.unlock();
 			} else {
 				delete task;
 			}

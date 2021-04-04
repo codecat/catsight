@@ -47,7 +47,7 @@ void CodeTab::RenderMenu(float dt)
 			auto stringsTab = new StringsTab(m_inspector, "Strings");
 			m_inspector->m_tabs.add(stringsTab);
 
-			stringsTab->m_task = m_inspector->m_tasks.Run([inspector, handle, region, stringsTab](Task* task) {
+			stringsTab->BeginTask([inspector, handle, region, stringsTab](Task* task) {
 				Disassembler disasm;
 				uintptr_t offset = 0;
 
@@ -95,8 +95,6 @@ void CodeTab::RenderMenu(float dt)
 
 				auto tmDuration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tmStart).count();
 				printf("Done searching referenced strings in %.02f milliseconds\n", tmDuration / 1000.0f);
-			})->Then([stringsTab](Task*) {
-				stringsTab->TaskFinished();
 			});
 		}
 
@@ -132,7 +130,7 @@ void CodeTab::Render(float dt)
 			auto newTab = new CodeResultsTab(m_inspector, "Constants");
 			m_inspector->m_tabs.add(newTab);
 
-			newTab->m_task = m_inspector->m_tasks.Run([value, handle, region, newTab](Task* task) {
+			newTab->BeginTask([value, handle, region, newTab](Task* task) {
 				Disassembler disasm;
 				uintptr_t offset = 0;
 
@@ -161,8 +159,6 @@ void CodeTab::Render(float dt)
 
 				auto tmDuration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tmStart).count();
 				printf("Done searching for constant in %.02f milliseconds\n", tmDuration / 1000.0f);
-			})->Then([newTab](Task*) {
-				newTab->TaskFinished();
 			});
 
 			m_ui_findConstantValueString = "";
@@ -191,13 +187,11 @@ void CodeTab::Render(float dt)
 			auto newTab = new CodeResultsTab(m_inspector, "Pattern");
 			m_inspector->m_tabs.add(newTab);
 
-			newTab->m_task = m_inspector->m_tasks.Run([pattern, handle, region, newTab](Task* task) {
+			newTab->BeginTask([pattern, handle, region, newTab](Task* task) {
 				Patterns::Find(handle, pattern, [newTab](uintptr_t p) {
 					auto& newResult = newTab->m_results.add();
 					newResult.m_address = p;
 				}, task, region);
-			})->Then([newTab](Task*) {
-				newTab->TaskFinished();
 			});
 
 			m_ui_findPatternValueString = "";

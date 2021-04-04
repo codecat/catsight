@@ -25,7 +25,7 @@ public:
 	int GetWorkerCount();
 	int GetActiveWorkerCount();
 
-	Task* Run(const Task::Func& func, void* userdata = nullptr);
+	void Run(Task* task);
 
 	void Update();
 };

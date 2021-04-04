@@ -1,5 +1,6 @@
 #include <Common.h>
 #include <Tabs/TaskWaitTab.h>
+#include <Inspector.h>
 
 #include <hello_imgui.h>
 
@@ -10,6 +11,20 @@ TaskWaitTab::TaskWaitTab(Inspector* inspector, const s2::string& id)
 
 TaskWaitTab::~TaskWaitTab()
 {
+}
+
+void TaskWaitTab::BeginTask(Task* task)
+{
+	m_task = task;
+	m_task->Then([this](Task*) {
+		TaskFinished();
+	});
+	m_inspector->m_tasks.Run(m_task);
+}
+
+void TaskWaitTab::BeginTask(const Task::Func& func, void* userdata)
+{
+	BeginTask(new Task(func, userdata));
 }
 
 void TaskWaitTab::TaskFinished()

@@ -13,6 +13,8 @@ public:
 	TaskWaitTab(Inspector* inspector, const s2::string& id);
 	virtual ~TaskWaitTab();
 
+	virtual void BeginTask(Task* task);
+	virtual void BeginTask(const Task::Func& func, void* userdata = nullptr);
 	virtual void TaskFinished();
 
 	virtual bool CanClose() override;

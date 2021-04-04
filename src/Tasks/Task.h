@@ -20,7 +20,7 @@ private:
 	std::atomic<bool> m_canceled = false;
 
 public:
-	Task(const Func& func, void* userdata);
+	Task(const Func& func, void* userdata = nullptr);
 	~Task();
 
 	void RunSync();
