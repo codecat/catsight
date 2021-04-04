@@ -6,6 +6,7 @@
 #include <Tabs/MapsTab.h>
 #include <Tabs/ModulesTab.h>
 #include <Tabs/DataTab.h>
+#include <Tabs/CodeTab.h>
 
 #include <hello_imgui.h>
 
@@ -20,10 +21,7 @@ Inspector::Inspector(const ProcessInfo& info)
 	m_tabs.add(new ModulesTab(this, "Modules"));
 	m_tabs.top()->m_shouldFocus = true;
 
-	m_processRegions = m_processHandle->GetMemoryRegions();
-	if (m_processRegions.len() > 0) {
-		m_tabs.add(new DataTab(this, "Data", m_processRegions[0].m_start));
-	}
+	UpdateMemoryRegions();
 }
 
 Inspector::~Inspector()
@@ -44,19 +42,20 @@ const ProcessInfo& Inspector::GetProcessInfo()
 
 bool Inspector::GetMemoryRegion(uintptr_t p, ProcessMemoryRegion& region)
 {
-	bool ret = false;
-	m_processRegionsMutex.lock();
-
+	std::scoped_lock lock(m_processRegionsMutex);
 	for (auto& r : m_processRegions) {
 		if (p >= r.m_start && p < r.m_end) {
 			region = r;
-			ret = true;
-			break;
+			return true;
 		}
 	}
+	return false;
+}
 
-	m_processRegionsMutex.unlock();
-	return ret;
+void Inspector::UpdateMemoryRegions()
+{
+	std::scoped_lock lock(m_processRegionsMutex);
+	m_processRegions = m_processHandle->GetMemoryRegions();
 }
 
 void Inspector::Render(float dt)
@@ -97,6 +96,15 @@ void Inspector::RenderMenu(float dt)
 			if (ImGui::MenuItem("New data tab")) {
 				if (m_processRegions.len() > 0) {
 					m_tabs.add(new DataTab(this, "Data", m_processRegions[0].m_start));
+				}
+			}
+			if (ImGui::MenuItem("New code tab")) {
+				for (auto& region : m_processRegions) {
+					if (!region.IsExecute()) {
+						continue;
+					}
+					m_tabs.add(new CodeTab(this, "Code", region.m_start));
+					break;
 				}
 			}
 			ImGui::EndMenu();

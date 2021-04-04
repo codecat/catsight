@@ -32,8 +32,7 @@ void MapsTab::Render(float dt)
 {
 	//TODO: Maybe pick a better way to refresh regions for an inspector rather than opening the maps tab
 	if (ImGui::IsWindowAppearing()) {
-		std::scoped_lock lock(m_inspector->m_processRegionsMutex);
-		m_inspector->m_processRegions = m_inspector->m_processHandle->GetMemoryRegions();
+		m_inspector->UpdateMemoryRegions();
 		DoSearch();
 	}
 
@@ -208,6 +207,7 @@ void MapsTab::DoSearch()
 		return;
 	}
 
+	std::scoped_lock lock(m_inspector->m_processRegionsMutex);
 	for (size_t i = 0; i < m_inspector->m_processRegions.len(); i++) {
 		auto& map = m_inspector->m_processRegions[i];
 		if (map.m_path.contains_nocase(m_search) || map.m_section.contains_nocase(m_search)) {

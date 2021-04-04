@@ -35,6 +35,7 @@ public:
 	const ProcessInfo& GetProcessInfo();
 
 	bool GetMemoryRegion(uintptr_t p, ProcessMemoryRegion& region);
+	void UpdateMemoryRegions();
 
 	void Render(float dt);
 	void Update(float dt);
