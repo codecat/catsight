@@ -20,6 +20,9 @@ TaskWorker::~TaskWorker()
 	if (m_task != nullptr) {
 		delete m_task;
 	}
+
+	m_keepRunning = false;
+	m_thread.join();
 }
 
 bool TaskWorker::IsIdle()
@@ -48,7 +51,7 @@ void TaskWorker::FindNewTask()
 
 void TaskWorker::Update()
 {
-	while (true) {
+	while (m_keepRunning) {
 		System::Sleep(50);
 
 		if (m_task == nullptr) {

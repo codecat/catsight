@@ -15,6 +15,8 @@ private:
 	Tasks* m_tasks;
 
 	std::thread m_thread;
+	std::atomic<bool> m_keepRunning = true;
+
 	std::atomic<bool> m_idle;
 	std::atomic<Task*> m_task;
 
