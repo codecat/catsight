@@ -7,6 +7,8 @@
 #include <Tab.h>
 #include <Script/Engine.h>
 
+#include <mutex>
+
 class Inspector
 {
 private:
@@ -20,6 +22,7 @@ public:
 	ProcessInfo m_processInfo;
 	ProcessHandle* m_processHandle = nullptr;
 	s2::list<ProcessMemoryRegion> m_processRegions;
+	std::mutex m_processRegionsMutex; //TODO: Can we get rid of this **here**? Move it somewhere else? ProcessMemoryRegionCollection?
 
 	s2::list<Tab*> m_tabs;
 

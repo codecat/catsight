@@ -32,7 +32,9 @@ void MapsTab::Render(float dt)
 {
 	//TODO: Maybe pick a better way to refresh regions for an inspector rather than opening the maps tab
 	if (ImGui::IsWindowAppearing()) {
+		m_inspector->m_processRegionsMutex.lock();
 		m_inspector->m_processRegions = m_inspector->m_processHandle->GetMemoryRegions();
+		m_inspector->m_processRegionsMutex.unlock();
 	}
 
 	Helpers::InputText("Search", &m_search, ImGuiInputTextFlags_AutoSelectAll);

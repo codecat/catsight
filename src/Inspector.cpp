@@ -41,13 +41,19 @@ const ProcessInfo& Inspector::GetProcessInfo()
 
 bool Inspector::GetMemoryRegion(uintptr_t p, ProcessMemoryRegion& region)
 {
+	bool ret = false;
+	m_processRegionsMutex.lock();
+
 	for (auto& r : m_processRegions) {
 		if (p >= r.m_start && p < r.m_end) {
 			region = r;
-			return true;
+			ret = true;
+			break;
 		}
 	}
-	return false;
+
+	m_processRegionsMutex.unlock();
+	return ret;
 }
 
 void Inspector::Render(float dt)
