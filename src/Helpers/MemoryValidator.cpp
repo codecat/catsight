@@ -17,8 +17,11 @@ bool MemoryValidator::String(ProcessHandle* handle, uintptr_t p)
 		return false;
 	}
 
-	for (int i = 0; i < 5; i++) {
-		char c = handle->Read<char>(p + i);
+	uint8_t buffer[5];
+	handle->ReadMemory(p, buffer, sizeof(buffer));
+
+	for (size_t i = 0; i < sizeof(buffer); i++) {
+		uint8_t c = buffer[i];
 		if (c < 0x20 || c > 0x7E) {
 			break;
 		}
