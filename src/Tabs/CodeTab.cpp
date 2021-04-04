@@ -138,7 +138,7 @@ void CodeTab::Render(float dt)
 
 				auto tmStart = std::chrono::high_resolution_clock::now();
 
-				while (offset < region.Size()) {
+				while (!task->IsCanceled() && offset < region.Size()) {
 					uintptr_t address = region.m_start + offset;
 
 					ZydisDecodedInstruction instr;
