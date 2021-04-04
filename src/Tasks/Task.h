@@ -16,8 +16,8 @@ public:
 
 private:
 	Func m_func;
-
 	CallbackFunc m_callback;
+	std::atomic<bool> m_canceled = false;
 
 public:
 	Task(const Func& func, void* userdata);
@@ -26,6 +26,9 @@ public:
 	void RunSync();
 
 	Task* Then(const CallbackFunc& func);
+
+	void Cancel();
+	bool IsCanceled();
 
 	bool HasCallback();
 	void RunCallback();

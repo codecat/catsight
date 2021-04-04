@@ -24,6 +24,16 @@ Task* Task::Then(const CallbackFunc& func)
 	return this;
 }
 
+void Task::Cancel()
+{
+	m_canceled = true;
+}
+
+bool Task::IsCanceled()
+{
+	return m_canceled;
+}
+
 bool Task::HasCallback()
 {
 	return m_callback != nullptr;

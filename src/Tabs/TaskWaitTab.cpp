@@ -25,6 +25,10 @@ bool TaskWaitTab::CanClose()
 void TaskWaitTab::Render(float dt)
 {
 	if (m_task != nullptr) {
+		if (ImGui::Button("Cancel")) {
+			m_task->Cancel();
+		}
+		ImGui::SameLine();
 		ImGui::ProgressBar(m_task->m_progress);
 	}
 }
