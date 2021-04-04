@@ -52,12 +52,24 @@ void Patterns::Find(ProcessHandle* handle, const char* pattern, const Callback& 
 	uintptr_t end = region.m_end;
 	size_t size = region.Size();
 
-	//TODO: Optimization: read larger buffers from process instead of byte-per-byte to avoid the overhead of remote memory access and virtual function calls
+	uint8_t buffer[512];
+	uintptr_t bufferStart = 0;
+	uintptr_t bufferEnd = 0;
 
 	for (uintptr_t p = start; p < end; p++) {
-		auto& byte = compiled[cur];
+		if (p < bufferStart || p >= bufferEnd) {
+			bufferStart = p;
+			bufferEnd = p + sizeof(buffer);
+			handle->ReadMemory(p, buffer, sizeof(buffer));
+		}
 
-		if (byte.mask == 1 || handle->Read<uint8_t>(p) == byte.byte) {
+		assert(bufferEnd > bufferStart);
+
+		int bufferOffset = p - bufferStart;
+		assert(bufferOffset >= 0);
+
+		auto& byte = compiled[cur];
+		if (byte.mask == 1 || buffer[bufferOffset] == byte.byte) {
 			if (cur == 0) {
 				startAddress = p;
 			}
