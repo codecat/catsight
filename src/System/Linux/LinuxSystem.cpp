@@ -1,7 +1,6 @@
 #include <Common.h>
 #include <System.h>
 
-#if defined(PLATFORM_LINUX)
 #include <Folder.h>
 #include <System/Linux/LinuxProcessHandle.h>
 
@@ -112,5 +111,3 @@ void System::Sleep(int ms)
 {
 	usleep(ms * 1000);
 }
-
-#endif

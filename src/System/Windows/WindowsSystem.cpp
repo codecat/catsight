@@ -1,8 +1,6 @@
 #include <Common.h>
 #include <System.h>
 
-#if defined(PLATFORM_WINDOWS)
-
 #include <System/Windows/WindowsProcessHandle.h>
 
 #include <Windows.h>
@@ -158,5 +156,3 @@ void System::Sleep(int ms)
 {
 	::Sleep(ms);
 }
-
-#endif

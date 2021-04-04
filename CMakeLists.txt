@@ -18,18 +18,11 @@ add_subdirectory(external/sol2)
 include(FindLua)
 find_package(Lua REQUIRED)
 
-include(hello_imgui_add_app)
-hello_imgui_add_app(catsight
+set(CATSIGHT_SOURCES
 	src/main.cpp
 	src/Common.cpp
 	src/System/ProcessHandle.cpp
 	src/System/ProcessMemoryRegion.cpp
-
-	src/System/Linux/System.cpp
-	src/System/Linux/LinuxProcessHandle.cpp
-
-	src/System/Windows/System.cpp
-	src/System/Windows/WindowsProcessHandle.cpp
 
 	src/Resources.cpp
 	src/Folder.cpp
@@ -67,6 +60,23 @@ hello_imgui_add_app(catsight
 	src/Script/Types/Pointer.cpp
 )
 
+if(WIN32)
+	list(APPEND CATSIGHT_SOURCES
+		src/System/Windows/WindowsSystem.cpp
+		src/System/Windows/WindowsProcessHandle.cpp
+	)
+	add_definitions(-DPLATFORM_WINDOWS -DWIN32_LEAN_AND_MEAN)
+elseif(UNIX)
+	list(APPEND CATSIGHT_SOURCES
+		src/System/Linux/WindowsSystem.cpp
+		src/System/Linux/LinuxProcessHandle.cpp
+	)
+	add_definitions(-DPLATFORM_LINUX)
+endif()
+
+include(hello_imgui_add_app)
+hello_imgui_add_app(catsight ${CATSIGHT_SOURCES})
+
 include_directories(
 	src/
 	external/scratch2/scratch2
@@ -80,12 +90,6 @@ target_link_libraries(catsight PUBLIC
 	Zydis
 	${LUA_LIBRARIES}
 )
-
-if(WIN32)
-	add_definitions(-DPLATFORM_WINDOWS -DWIN32_LEAN_AND_MEAN)
-elseif(UNIX)
-	add_definitions(-DPLATFORM_LINUX)
-endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	add_definitions(-DPLATFORM_64)

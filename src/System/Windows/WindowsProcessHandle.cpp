@@ -1,8 +1,6 @@
 #include <Common.h>
 #include <System/Windows/WindowsProcessHandle.h>
 
-#if defined(PLATFORM_WINDOWS)
-
 #include <Windows.h>
 #include <TlHelp32.h>
 
@@ -182,9 +180,13 @@ s2::list<ProcessMemoryRegion> WindowsProcessHandle::GetMemoryRegions()
 		} else if (mbi.Protect == PAGE_EXECUTE_READWRITE || mbi.Protect == PAGE_EXECUTE_WRITECOPY) {
 			region.m_flags = pmrf_Read | pmrf_Write | pmrf_Execute;
 		}
+
+		switch (mbi.Type) {
+		case MEM_IMAGE: region.m_flags |= pmrf_Image; break;
+		case MEM_MAPPED: region.m_flags |= pmrf_Mapped; break;
+		case MEM_PRIVATE: region.m_flags |= pmrf_Private; break;
+		}
 	}
 
 	return ret;
 }
-
-#endif
