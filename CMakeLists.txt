@@ -100,6 +100,9 @@ elseif(UNIX)
 	add_definitions(
 		-DPLATFORM_LINUX
 	)
+	include_directories(
+		external/ELFIO
+	)
 endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)

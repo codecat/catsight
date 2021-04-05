@@ -1,6 +1,8 @@
 #include <Common.h>
 #include <System/Linux/LinuxProcessHandle.h>
 
+#include <elfio/elfio.hpp>
+
 struct LinuxMemoryMapInfo
 {
 	int mi_matches;
@@ -98,6 +100,8 @@ s2::list<ProcessMemoryRegion> LinuxProcessHandle::GetMemoryRegions()
 {
 	s2::list<ProcessMemoryRegion> ret;
 
+	s2::string lastImagePath;
+
 	FILE* fh = fopen(s2::strprintf("/proc/%d/maps", m_pid), "rb");
 	while (!feof(fh)) {
 		LinuxMemoryMapInfo mi;
@@ -134,6 +138,49 @@ s2::list<ProcessMemoryRegion> LinuxProcessHandle::GetMemoryRegions()
 			continue;
 		}
 
+		ModuleInfo* pageModule = nullptr;
+
+		if (lastImagePath != mi.mi_path && mi.mi_inode > 0 && s2::file_exists(mi.mi_path)) {
+			lastImagePath = mi.mi_path;
+
+			for (auto& module : m_modules) {
+				if (module.m_path == mi.mi_path) {
+					pageModule = &module;
+					break;
+				}
+			}
+			if (pageModule == nullptr) {
+				ELFIO::elfio elf;
+				if (elf.load(mi.mi_path)) {
+					auto& newModule = m_modules.add();
+					newModule.m_path = mi.mi_path;
+					newModule.m_start = (uintptr_t)mi.mi_base;
+
+					//TODO: Entry point offset might need to be relative to a section rather than file? Need to check..
+					newModule.m_entryPoint = newModule.m_start + elf.get_entry();
+
+					for (auto section : elf.sections) {
+						auto& newSection = newModule.m_sections.add();
+						newSection.m_offset = section->get_offset();
+						newSection.m_size = section->get_size();
+						newSection.m_name = section->get_name().c_str();
+					}
+
+					pageModule = &m_modules.top();
+				}
+			}
+		}
+
+		SectionInfo* pageSection = nullptr;
+		if (pageModule != nullptr) {
+			for (auto& section : pageModule->m_sections) {
+				if (section.m_offset == (uintptr_t)mi.mi_offset) {
+					pageSection = &section;
+					break;
+				}
+			}
+		}
+
 		auto& region = ret.add();
 		region.m_start = (uintptr_t)mi.mi_base;
 		region.m_end = (uintptr_t)mi.mi_end;
@@ -144,6 +191,14 @@ s2::list<ProcessMemoryRegion> LinuxProcessHandle::GetMemoryRegions()
 		if (mi.mi_flags.protection != '-') { region.m_flags |= pmrf_Protect; }
 
 		region.m_path = mi.mi_path;
+
+		if (pageModule != nullptr) {
+			region.m_flags |= pmrf_Image;
+			region.m_entryPoint = pageModule->m_entryPoint;
+		}
+		if (pageSection != nullptr) {
+			region.m_section = pageSection->m_name;
+		}
 	}
 	fclose(fh);
 

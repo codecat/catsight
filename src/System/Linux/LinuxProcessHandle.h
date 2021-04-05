@@ -13,6 +13,23 @@ private:
 	FILE* m_fhMemory;
 	std::mutex m_readLock;
 
+	struct SectionInfo
+	{
+		uintptr_t m_offset;
+		uintptr_t m_size;
+		s2::string m_name;
+	};
+
+	struct ModuleInfo
+	{
+		s2::string m_path;
+		uintptr_t m_start = 0;
+		uintptr_t m_entryPoint = 0;
+		s2::list<SectionInfo> m_sections;
+	};
+
+	s2::list<ModuleInfo> m_modules;
+
 public:
 	LinuxProcessHandle(const ProcessInfo& info);
 	virtual ~LinuxProcessHandle();
