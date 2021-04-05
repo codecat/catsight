@@ -100,8 +100,6 @@ s2::list<ProcessMemoryRegion> LinuxProcessHandle::GetMemoryRegions()
 {
 	s2::list<ProcessMemoryRegion> ret;
 
-	s2::string lastImagePath;
-
 	FILE* fh = fopen(s2::strprintf("/proc/%d/maps", m_pid), "rb");
 	while (!feof(fh)) {
 		LinuxMemoryMapInfo mi;
@@ -139,10 +137,7 @@ s2::list<ProcessMemoryRegion> LinuxProcessHandle::GetMemoryRegions()
 		}
 
 		ModuleInfo* pageModule = nullptr;
-
-		if (lastImagePath != mi.mi_path && mi.mi_inode > 0 && s2::file_exists(mi.mi_path)) {
-			lastImagePath = mi.mi_path;
-
+		if (mi.mi_inode > 0 && s2::file_exists(mi.mi_path)) {
 			for (auto& module : m_modules) {
 				if (module.m_path == mi.mi_path) {
 					pageModule = &module;
