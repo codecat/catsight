@@ -67,13 +67,11 @@ if(WIN32)
 		src/System/Windows/WindowsSystem.cpp
 		src/System/Windows/WindowsProcessHandle.cpp
 	)
-	add_definitions(-DPLATFORM_WINDOWS -DWIN32_LEAN_AND_MEAN)
 elseif(UNIX)
 	list(APPEND CATSIGHT_SOURCES
 		src/System/Linux/LinuxSystem.cpp
 		src/System/Linux/LinuxProcessHandle.cpp
 	)
-	add_definitions(-DPLATFORM_LINUX)
 endif()
 
 include(hello_imgui_add_app)
@@ -92,6 +90,17 @@ target_link_libraries(catsight PUBLIC
 	Zydis
 	${LUA_LIBRARIES}
 )
+
+if(WIN32)
+	add_definitions(
+		-DPLATFORM_WINDOWS
+		-DWIN32_LEAN_AND_MEAN
+	)
+elseif(UNIX)
+	add_definitions(
+		-DPLATFORM_LINUX
+	)
+endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	add_definitions(-DPLATFORM_64)
