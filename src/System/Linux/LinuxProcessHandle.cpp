@@ -190,6 +190,17 @@ s2::list<ProcessMemoryRegion> LinuxProcessHandle::GetMemoryRegions()
 		if (pageModule != nullptr) {
 			region.m_flags |= pmrf_Image;
 			region.m_entryPoint = pageModule->m_entryPoint;
+
+			/*
+			for (auto& section : pageModule->m_sections) {
+				if (section.m_offset >= (uintptr_t)mi.mi_offset && section.m_offset < (uintptr_t)mi.mi_offset + ((uintptr_t)mi.mi_end - (uintptr_t)mi.mi_base)) {
+					if (region.m_section.len() > 0) {
+						region.m_section += ", ";
+					}
+					region.m_section += section.m_name;
+				}
+			}
+			*/
 		}
 		if (pageSection != nullptr) {
 			region.m_section = pageSection->m_name;
