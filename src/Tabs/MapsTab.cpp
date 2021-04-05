@@ -49,9 +49,10 @@ void MapsTab::Render(float dt)
 		}
 	}
 
-	if (ImGui::BeginTable("Maps", 3)) {
+	if (ImGui::BeginTable("Maps", 4)) {
 		ImGui::TableSetupColumn("Range", ImGuiTableColumnFlags_WidthFixed);
 		ImGui::TableSetupColumn("Flags", ImGuiTableColumnFlags_WidthFixed, 70);
+		ImGui::TableSetupColumn("Section", ImGuiTableColumnFlags_WidthFixed, 100);
 		ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableHeadersRow();
 
@@ -120,9 +121,12 @@ void MapsTab::Render(float dt)
 					ImGui::PopStyleColor();
 				}
 
+				ImGui::TableSetColumnIndex(2);
+				ImGui::TextDisabled("%s", map.m_section.c_str());
+
 				ImGui::PopFont();
 
-				ImGui::TableSetColumnIndex(2);
+				ImGui::TableSetColumnIndex(3);
 				if (map.IsExecute()) {
 					Helpers::CodeButton(m_inspector, map.m_start);
 
@@ -136,12 +140,7 @@ void MapsTab::Render(float dt)
 				}
 				Helpers::DataButton(m_inspector, map.m_start);
 
-				if (map.m_section != "") {
-					ImGui::SameLine();
-					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(.5f, .5f, .5f, 1));
-					ImGui::TextUnformatted(map.m_section);
-					ImGui::PopStyleColor();
-				} else if (map.m_path != "") {
+				if (map.m_path != "") {
 					ImGui::SameLine();
 					ImGui::TextUnformatted(map.m_path);
 				}
