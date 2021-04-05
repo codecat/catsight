@@ -70,7 +70,7 @@ if(WIN32)
 	add_definitions(-DPLATFORM_WINDOWS -DWIN32_LEAN_AND_MEAN)
 elseif(UNIX)
 	list(APPEND CATSIGHT_SOURCES
-		src/System/Linux/WindowsSystem.cpp
+		src/System/Linux/LinuxSystem.cpp
 		src/System/Linux/LinuxProcessHandle.cpp
 	)
 	add_definitions(-DPLATFORM_LINUX)

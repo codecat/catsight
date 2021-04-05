@@ -96,7 +96,7 @@ s2::list<ProcessInfo> System::GetProcesses()
 		auto& newProcess = ret.push();
 		newProcess.pathFull = linkBuffer;
 		newProcess.pathExe = linkBufferFilename;
-		newProcess.pathDir = s2::string(linkBuffer, newProc.pathFull.len() - newProc.pathExe.len() - 1);
+		newProcess.pathDir = s2::string(linkBuffer, newProcess.pathFull.len() - newProcess.pathExe.len() - 1);
 		newProcess.pid = pid;
 		newProcess.user = GetProcessUser(pid);
 	}
