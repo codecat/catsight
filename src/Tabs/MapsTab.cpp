@@ -169,11 +169,8 @@ void MapsTab::ShowRegionPointer(uintptr_t p)
 
 void MapsTab::RenderSearch()
 {
-	std::scoped_lock lock(m_inspector->m_processRegionsMutex);
-
 	size_t prevSearchLen = m_search.len();
 	bool changed = Helpers::InputText("Search", &m_search, ImGuiInputTextFlags_AutoSelectAll);
-	auto& maps = m_inspector->m_processRegions;
 
 	if (!changed) {
 		return;
@@ -184,11 +181,10 @@ void MapsTab::RenderSearch()
 		return;
 	}
 
-	s2::string str;
-
 	if (m_filterIndices.len() > 0 && m_search.len() > prevSearchLen) {
+		std::scoped_lock lock(m_inspector->m_processRegionsMutex);
 		for (int i = (int)m_filterIndices.len() - 1; i >= 0; i--) {
-			auto& map = maps[m_filterIndices[i]];
+			auto& map = m_inspector->m_processRegions[m_filterIndices[i]];
 			if (!map.m_path.contains_nocase(m_search) && !map.m_section.contains_nocase(m_search)) {
 				m_filterIndices.remove(i);
 			}
