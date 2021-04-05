@@ -58,6 +58,15 @@ void CodeTab::RenderMenu(float dt)
 						continue;
 					}
 
+					offset += instr.length;
+
+					// Skip call and jump instructions as their operands are definitely not strings
+					if (instr.meta.category == ZYDIS_CATEGORY_CALL) {
+						continue;
+					} else if (instr.meta.branch_type != ZYDIS_BRANCH_TYPE_NONE) {
+						continue;
+					}
+
 					// Go through all instruction operands and find valid pointers
 					for (uint8_t j = 0; j < instr.operand_count; j++) {
 						uintptr_t operandValue = GetOperandValue(instr, j, address);
@@ -85,7 +94,6 @@ void CodeTab::RenderMenu(float dt)
 						newResult.m_value = operandValue;
 					}
 
-					offset += instr.length;
 					task->m_progress = (float)(offset / (double)region.Size());
 				}
 			});
