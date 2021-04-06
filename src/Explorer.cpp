@@ -111,9 +111,19 @@ void Explorer::SetStyle()
 void Explorer::LoadFonts()
 {
 	auto& io = ImGui::GetIO();
-	io.FontDefault = HelloImGui::LoadFontTTF_WithFontAwesomeIcons("fonts/DroidSans.ttf", 16);
-	Resources::FontMono = HelloImGui::LoadFontTTF_WithFontAwesomeIcons("fonts/DroidSansMono.ttf", 16);
-	Resources::FontBold = HelloImGui::LoadFontTTF_WithFontAwesomeIcons("fonts/DroidSans-Bold.ttf", 16);
+
+	ImFontConfig configIcons;
+	configIcons.GlyphMinAdvanceX = 18;
+	configIcons.GlyphMaxAdvanceX = 18;
+
+	io.FontDefault = HelloImGui::LoadFontTTF("fonts/DroidSans.ttf", 16);
+	HelloImGui::MergeFontAwesomeToLastFont(15, configIcons);
+
+	Resources::FontMono = HelloImGui::LoadFontTTF("fonts/DroidSansMono.ttf", 16);
+	HelloImGui::MergeFontAwesomeToLastFont(15, configIcons);
+
+	Resources::FontBold = HelloImGui::LoadFontTTF("fonts/DroidSans-Bold.ttf", 16);
+	HelloImGui::MergeFontAwesomeToLastFont(15, configIcons);
 }
 
 Inspector* Explorer::GetInspector(const ProcessInfo& info)
