@@ -15,4 +15,6 @@ namespace System
 	ProcessHandle* OpenProcessHandle(const ProcessInfo& info);
 
 	void Sleep(int ms);
+
+	void OpenURL(const char* url);
 }

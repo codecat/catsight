@@ -5,6 +5,7 @@
 
 #include <Windows.h>
 #include <TlHelp32.h>
+#include <shellapi.h>
 
 static void CheckLastError()
 {
@@ -157,4 +158,9 @@ ProcessHandle* System::OpenProcessHandle(const ProcessInfo& info)
 void System::Sleep(int ms)
 {
 	::Sleep(ms);
+}
+
+void System::OpenURL(const char* url)
+{
+	ShellExecuteA(nullptr, nullptr, url, nullptr, nullptr, SW_SHOW);
 }

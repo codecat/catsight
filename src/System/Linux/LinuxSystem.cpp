@@ -113,3 +113,8 @@ void System::Sleep(int ms)
 {
 	usleep(ms * 1000);
 }
+
+void System::OpenURL(const char* url)
+{
+	system(s2::strprintf("xdg-open %s", url));
+}

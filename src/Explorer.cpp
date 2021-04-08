@@ -164,7 +164,7 @@ void Explorer::RenderMenu(float dt)
 	}
 	ImGui::TextDisabled(ICON_FA_USER " %s", m_currentUser.username.c_str());
 
-	if (ImGui::BeginMenu("File")) {
+	if (ImGui::BeginMenu(ICON_FA_FILE " File")) {
 		if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN " Open")) {
 			if (ImGui::IsWindowAppearing()) {
 				printf("Reading procs list\n");
@@ -218,8 +218,16 @@ void Explorer::RenderMenu(float dt)
 		ImGui::EndMenu();
 	}
 
-	if (ImGui::BeginMenu(ICON_FA_BUG " Debug")) {
-		ImGui::MenuItem("UI metrics", nullptr, &m_metricsVisible);
+	if (ImGui::BeginMenu(ICON_FA_QUESTION_CIRCLE " Help")) {
+		ImGui::MenuItem(ICON_FA_CHART_LINE " UI metrics", nullptr, &m_metricsVisible);
+		ImGui::Separator();
+		//TODO: Itch item
+		if (ImGui::MenuItem(ICON_FA_CODE " Github")) {
+			System::OpenURL("https://github.com/codecat/catsight");
+		}
+		if (ImGui::MenuItem(ICON_FA_HEART " Sponsor")) {
+			System::OpenURL("https://github.com/sponsors/codecat");
+		}
 		ImGui::EndMenu();
 	}
 }
