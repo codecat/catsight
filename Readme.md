@@ -9,6 +9,9 @@ Cross-platform process memory viewer inspired by x64dbg.
 * Disassemble code in memory regions and jump between references.
 * Byte pattern searching and generation in code sections.
 
+## Download & install
+Pre-built binaries will be provided very soon on Itch.io.
+
 ## Screenshots
 ### Data tab
 ![](https://missdev.nl/catsight4.png)
