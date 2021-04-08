@@ -98,18 +98,19 @@ s2::list<ProcessInfo> System::GetProcesses()
 				continue;
 			}
 
-			auto& newProc = ret.add();
-			newProc.pid = proc.th32ProcessID;
-			newProc.pathExe = proc.szExeFile;
-			newProc.user = GetUserFromProcessHandle(hProcInfo);
-
 			char fullPath[MAX_PATH];
 			DWORD fullPathSize = sizeof(fullPath);
-			if (QueryFullProcessImageName(hProcInfo, 0, fullPath, &fullPathSize)) {
-				newProc.pathFull = fullPath;
+			if (!QueryFullProcessImageName(hProcInfo, 0, fullPath, &fullPathSize)) {
+				continue;
 			}
 
+			auto& newProc = ret.add();
+			newProc.pathFull = fullPath;
+			newProc.pathExe = proc.szExeFile;
 			newProc.pathDir = s2::string(fullPath, newProc.pathFull.len() - newProc.pathExe.len() - 1);
+
+			newProc.pid = proc.th32ProcessID;
+			newProc.user = GetUserFromProcessHandle(hProcInfo);
 
 			FILETIME tmCreation, tmExit, tmKernel, tmUser;
 			if (GetProcessTimes(hProcInfo, &tmCreation, &tmExit, &tmKernel, &tmUser)) {
