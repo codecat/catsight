@@ -62,10 +62,19 @@ set(CATSIGHT_SOURCES
 	src/Script/Types/Pointer.cpp
 )
 
+set(CATSIGHT_LIBS
+	Zydis
+	${LUA_LIBRARIES}
+)
+
 if(WIN32)
 	list(APPEND CATSIGHT_SOURCES
 		src/System/Windows/WindowsSystem.cpp
 		src/System/Windows/WindowsProcessHandle.cpp
+		src/System/Windows/WindowsError.cpp
+	)
+	list(APPEND CATSIGHT_LIBS
+		DbgHelp
 	)
 elseif(UNIX)
 	list(APPEND CATSIGHT_SOURCES
@@ -86,10 +95,7 @@ include_directories(
 	${LUA_INCLUDE_DIR}
 )
 
-target_link_libraries(catsight PUBLIC
-	Zydis
-	${LUA_LIBRARIES}
-)
+target_link_libraries(catsight PUBLIC ${CATSIGHT_LIBS})
 
 if(WIN32)
 	add_definitions(

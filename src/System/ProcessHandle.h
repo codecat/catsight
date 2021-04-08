@@ -14,6 +14,9 @@ public:
 	virtual bool IsReadableMemory(uintptr_t p) = 0;
 	virtual bool IsExecutableMemory(uintptr_t p) = 0;
 
+	virtual bool GetSymbolName(uintptr_t p, s2::string& name) = 0;
+	virtual bool GetSymbolAddress(const char* name, uintptr_t& p) = 0;
+
 	virtual s2::list<ProcessMemoryRegion> GetMemoryRegions() = 0;
 
 public:

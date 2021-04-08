@@ -40,5 +40,8 @@ public:
 	virtual bool IsReadableMemory(uintptr_t p) override;
 	virtual bool IsExecutableMemory(uintptr_t p) override;
 
+	virtual bool GetSymbolName(uintptr_t p, s2::string& name) override;
+	virtual bool GetSymbolAddress(const char* name, uintptr_t& p) override;
+
 	virtual s2::list<ProcessMemoryRegion> GetMemoryRegions() override;
 };

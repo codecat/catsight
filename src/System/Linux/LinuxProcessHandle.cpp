@@ -96,6 +96,18 @@ bool LinuxProcessHandle::IsExecutableMemory(uintptr_t p)
 	return false;
 }
 
+bool LinuxProcessHandle::GetSymbolName(uintptr_t p, s2::string& name)
+{
+	//TODO
+	return false;
+}
+
+bool LinuxProcessHandle::GetSymbolAddress(const char* name, uintptr_t& p)
+{
+	//TODO
+	return false;
+}
+
 s2::list<ProcessMemoryRegion> LinuxProcessHandle::GetMemoryRegions()
 {
 	s2::list<ProcessMemoryRegion> ret;

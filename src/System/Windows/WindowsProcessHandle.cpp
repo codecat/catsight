@@ -1,19 +1,34 @@
 #include <Common.h>
 #include <System/Windows/WindowsProcessHandle.h>
+#include <System/Windows/WindowsError.h>
 
 #include <Windows.h>
 #include <TlHelp32.h>
+#include <DbgHelp.h>
+
+#include <mutex>
+static std::mutex __dbgHelpMutex;
 
 WindowsProcessHandle::WindowsProcessHandle(const ProcessInfo& info)
 {
 	m_proc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, info.pid);
 	if (m_proc == nullptr) {
 		printf("ERROR: Unable to open process for pid %d!\n", info.pid);
+		return;
+	}
+
+	m_symbols = SymInitialize(m_proc, nullptr, true);
+	if (!m_symbols) {
+		System::Windows::CheckLastError();
 	}
 }
 
 WindowsProcessHandle::~WindowsProcessHandle()
 {
+	if (m_symbols) {
+		SymCleanup(m_proc);
+	}
+
 	if (m_proc != nullptr) {
 		CloseHandle(m_proc);
 	}
@@ -62,6 +77,46 @@ bool WindowsProcessHandle::IsExecutableMemory(uintptr_t p)
 	}
 
 	return (mbi.Protect == PAGE_EXECUTE_READ || mbi.Protect == PAGE_EXECUTE_READWRITE || mbi.Protect == PAGE_EXECUTE_WRITECOPY);
+}
+
+bool WindowsProcessHandle::GetSymbolName(uintptr_t p, s2::string& name)
+{
+	// This is slow! (3 ms)
+
+	std::scoped_lock lock(__dbgHelpMutex);
+
+	const size_t symbolSize = sizeof(SYMBOL_INFO);
+	const size_t maxNameLength = 256;
+	static uint8_t symbolBuffer[symbolSize + maxNameLength];
+
+	SYMBOL_INFO* symbol = (SYMBOL_INFO*)symbolBuffer;
+	symbol->SizeOfStruct = symbolSize;
+	symbol->MaxNameLen = maxNameLength;
+
+	DWORD64 displacement = 0; //TODO: What do we do with this? Do we need it?
+	if (!SymFromAddr(m_proc, p, &displacement, symbol)) {
+		return false;
+	}
+
+	name = symbol->Name;
+	return true;
+}
+
+bool WindowsProcessHandle::GetSymbolAddress(const char* name, uintptr_t& p)
+{
+	// This is fast! (0.01 ms)
+
+	std::scoped_lock lock(__dbgHelpMutex);
+
+	SYMBOL_INFO symbol;
+	symbol.SizeOfStruct = sizeof(SYMBOL_INFO);
+	symbol.MaxNameLen = 1;
+	if (!SymFromName(m_proc, name, &symbol)) {
+		return false;
+	}
+
+	p = symbol.Address;
+	return true;
 }
 
 s2::list<ProcessMemoryRegion> WindowsProcessHandle::GetMemoryRegions()

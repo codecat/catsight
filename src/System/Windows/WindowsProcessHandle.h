@@ -8,6 +8,7 @@ class WindowsProcessHandle : public ProcessHandle
 {
 private:
 	void* m_proc = nullptr;
+	bool m_symbols = false;
 
 public:
 	WindowsProcessHandle(const ProcessInfo& info);
@@ -18,6 +19,9 @@ public:
 	virtual size_t ReadMemory(uintptr_t p, void* buffer, size_t size) override;
 	virtual bool IsReadableMemory(uintptr_t p) override;
 	virtual bool IsExecutableMemory(uintptr_t p) override;
+
+	virtual bool GetSymbolName(uintptr_t p, s2::string& name) override;
+	virtual bool GetSymbolAddress(const char* name, uintptr_t& p) override;
 
 	virtual s2::list<ProcessMemoryRegion> GetMemoryRegions() override;
 };
