@@ -13,6 +13,7 @@ public:
 	static Explorer* Instance;
 
 private:
+	HelloImGui::ImageGlPtr m_imgBackground;
 	HelloImGui::RunnerParams m_params;
 
 	Chrono::Time m_lastFrame;
@@ -30,6 +31,7 @@ public:
 
 	void SetStyle();
 	void LoadFonts();
+	void BeginApp();
 
 	Inspector* GetInspector(const ProcessInfo& info);
 	Inspector* GetInspector(int pid);
