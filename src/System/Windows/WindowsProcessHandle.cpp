@@ -22,12 +22,18 @@ WindowsProcessHandle::WindowsProcessHandle(const ProcessInfo& info)
 		System::Windows::CheckLastError();
 	}
 
+	// Keep all known symbols in memory
 	SymEnumSymbols(m_proc, 0, "*!*", [](PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID UserContext) -> BOOL {
 		auto handle = (WindowsProcessHandle*)UserContext;
 		handle->m_symbolAddresses.add_unsorted(pSymInfo->Name) = pSymInfo->Address;
+		handle->m_symbolNames.add_unsorted(pSymInfo->Address) = pSymInfo->Name;
 		return true;
 	}, this);
+
+	// Sort symbols
 	m_symbolAddresses.sort();
+	m_symbolNames.sort();
+
 	printf("%d symbols\n", (int)m_symbolAddresses.len());
 }
 
@@ -89,25 +95,7 @@ bool WindowsProcessHandle::IsExecutableMemory(uintptr_t p)
 
 bool WindowsProcessHandle::GetSymbolName(uintptr_t p, s2::string& name)
 {
-	//TODO: This is slow!
-
-	std::scoped_lock lock(__dbgHelpMutex);
-
-	const size_t symbolSize = sizeof(SYMBOL_INFO);
-	const size_t maxNameLength = 256;
-	static uint8_t symbolBuffer[symbolSize + maxNameLength];
-
-	SYMBOL_INFO* symbol = (SYMBOL_INFO*)symbolBuffer;
-	symbol->SizeOfStruct = symbolSize;
-	symbol->MaxNameLen = maxNameLength;
-
-	DWORD64 displacement = 0; //TODO: What do we do with this? Do we need it?
-	if (!SymFromAddr(m_proc, p, &displacement, symbol)) {
-		return false;
-	}
-
-	name = symbol->Name;
-	return true;
+	return m_symbolNames.get(p, name);
 }
 
 bool WindowsProcessHandle::GetSymbolAddress(const char* name, uintptr_t& p)

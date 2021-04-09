@@ -10,7 +10,9 @@ class WindowsProcessHandle : public ProcessHandle
 private:
 	void* m_proc = nullptr;
 	bool m_hasSymbols = false;
+
 	hashtable<uintptr_t> m_symbolAddresses;
+	sortdict<uintptr_t, s2::string> m_symbolNames;
 
 public:
 	WindowsProcessHandle(const ProcessInfo& info);
