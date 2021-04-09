@@ -76,133 +76,152 @@ void DataTab::Render(float dt)
 
 	uint16_t currentMemberSize = 0;
 
-	for (int i = 0; i < m_itemsPerPage + 1; i++) {
-		uintptr_t offset = (uintptr_t)m_topOffset + i * sizeof(uintptr_t);
-		uintptr_t address = base + offset;
+	auto handle = m_inspector->m_processHandle;
 
-		if (!m_inspector->m_processHandle->IsReadableMemory(address)) {
-			break;
-		}
+	if (ImGui::BeginTable("Code", 5, ImGuiTableFlags_Resizable)) {
+		ImGui::TableSetupColumn("Address", ImGuiTableColumnFlags_WidthFixed);
+		ImGui::TableSetupColumn("Offset", ImGuiTableColumnFlags_WidthFixed, 100);
+		ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed);
+		ImGui::TableSetupColumn("Bytes", ImGuiTableColumnFlags_WidthFixed);
+		ImGui::TableSetupColumn("Comments", ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableHeadersRow();
 
-		intptr_t relativeOffset = (intptr_t)offset - (intptr_t)m_baseOffset;
+		for (int i = 0; i < m_itemsPerPage + 1; i++) {
+			uintptr_t offset = (uintptr_t)m_topOffset + i * sizeof(uintptr_t);
+			uintptr_t address = base + offset;
 
-		intptr_t displayOffset, displayOffsetDepth;
-		if (m_baseSize == 0) {
-			displayOffset = relativeOffset;
-			displayOffsetDepth = 0;
-		} else {
-			displayOffset = relativeOffset % (intptr_t)m_baseSize;
-			displayOffsetDepth = relativeOffset / (intptr_t)m_baseSize;
-
-			if (relativeOffset < 0) {
-				displayOffset = m_baseSize + displayOffset - sizeof(uintptr_t);
-				displayOffsetDepth *= -1;
-				displayOffsetDepth++;
+			if (!m_inspector->m_processHandle->IsReadableMemory(address)) {
+				break;
 			}
-		}
 
-		if (offset + sizeof(uintptr_t) > size) {
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
-			ImGui::Text("Doesn't fit (TODO!)");
-			ImGui::PopStyleColor();
-			continue;
-		}
+			ImGui::TableNextRow(ImGuiTableRowFlags_None, m_itemHeight);
 
-		ImGui::PushID((void*)address);
+			intptr_t relativeOffset = (intptr_t)offset - (intptr_t)m_baseOffset;
 
-		float column = 0.0f;
-
-		Helpers::PointerText(m_inspector, address);
-		ImGui::SameLine();
-
-		column += 130;
-
-		ImGui::PushFont(Resources::FontMono);
-		if (ImGui::Button("$")) {
-			m_baseOffset = offset;
-		}
-		ImGui::SameLine();
-		if (relativeOffset > 0 && ImGui::Button(">")) {
-			if (m_baseSize == relativeOffset) {
-				m_baseSize = 0;
+			intptr_t displayOffset, displayOffsetDepth;
+			if (m_baseSize == 0) {
+				displayOffset = relativeOffset;
+				displayOffsetDepth = 0;
 			} else {
-				m_baseSize = relativeOffset;
+				displayOffset = relativeOffset % (intptr_t)m_baseSize;
+				displayOffsetDepth = relativeOffset / (intptr_t)m_baseSize;
+
+				if (relativeOffset < 0) {
+					displayOffset = m_baseSize + displayOffset - sizeof(uintptr_t);
+					displayOffsetDepth *= -1;
+					displayOffsetDepth++;
+				}
 			}
-		}
 
-		column += 60;
-		ImGui::SameLine(column);
-
-		ImGui::PushStyleColor(ImGuiCol_Text, ImColor::HSV(fmodf((float)displayOffsetDepth * 0.15f, 1.0f), 0.65f, 1.0f).Value);
-		if (displayOffset == 0) {
-			ImGui::TextUnformatted("$ ==>");
-		} else {
-			const char* format = "$+" OFFSET_FORMAT;
-			if (displayOffset < 0) {
-				format = "$-" OFFSET_FORMAT;
+			if (offset + sizeof(uintptr_t) > size) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+				ImGui::Text("Doesn't fit (TODO!)");
+				ImGui::PopStyleColor();
+				continue;
 			}
-			uintptr_t absDisplayOffset = (uintptr_t)(displayOffset < 0 ? displayOffset * -1 : displayOffset);
-			ImGui::Text(format, absDisplayOffset);
-		}
-		ImGui::PopStyleColor();
-		ImGui::PopFont();
 
-		column += 70;
-		ImGui::SameLine(column);
+			ImGui::PushID((void*)address);
 
-		uintptr_t value = 0;
-		if (m_inspector->m_processHandle->ReadMemory(address, &value, sizeof(value)) == sizeof(value)) {
+			ImGui::TableSetColumnIndex(0);
+
+			Helpers::PointerText(m_inspector, address);
+			ImGui::SameLine();
+
+			ImGui::TableSetColumnIndex(1);
+
 			ImGui::PushFont(Resources::FontMono);
-
-			if (value == 0) {
-				ImGui::TextDisabled(POINTER_FORMAT, value);
-			} else {
-				ImGui::Text(POINTER_FORMAT, value);
+			if (ImGui::Button("$")) {
+				m_baseOffset = offset;
 			}
-
 			ImGui::SameLine();
-
-			for (int i = 0; i < sizeof(uintptr_t); i++) {
-				int shift = i * 8;
-				uint8_t byteValue = (value & ((uintptr_t)0xFF << shift)) >> shift;
-
-				if (i > 0) {
-					ImGui::SameLine(0, 0);
-				}
-
-				if (byteValue >= 32 && byteValue <= 126) {
-					ImGui::Text("%c", byteValue);
+			if (relativeOffset > 0 && ImGui::Button(">")) {
+				if (m_baseSize == relativeOffset) {
+					m_baseSize = 0;
 				} else {
-					ImGui::TextDisabled(".");
+					m_baseSize = relativeOffset;
 				}
 			}
 
-			ImGui::PopFont();
-		}
-
-		column += 240;
-		ImGui::SameLine(column);
-
-		while (currentMemberSize < sizeof(uintptr_t)) {
-			uint16_t size = RenderMember(offset, currentMemberSize, displayOffset, i);
-			if (size == 0) {
-				// On 32 bit, advancing 4 bytes goes to the next row (eg. every possible item)
-				// On 64 bit, advancing 4 bytes goes to the next possible item (eg. float, int32, etc)
-				size = 4;
-			}
-			currentMemberSize += size;
 			ImGui::SameLine();
+
+			ImGui::PushStyleColor(ImGuiCol_Text, ImColor::HSV(fmodf((float)displayOffsetDepth * 0.15f, 1.0f), 0.65f, 1.0f).Value);
+			if (displayOffset == 0) {
+				ImGui::TextUnformatted("$ ==>");
+			} else {
+				const char* format = "$+" OFFSET_FORMAT;
+				if (displayOffset < 0) {
+					format = "$-" OFFSET_FORMAT;
+				}
+				uintptr_t absDisplayOffset = (uintptr_t)(displayOffset < 0 ? displayOffset * -1 : displayOffset);
+				ImGui::Text(format, absDisplayOffset);
+			}
+			ImGui::PopStyleColor();
+			ImGui::PopFont();
+
+			uintptr_t value = 0;
+			if (handle->ReadMemory(address, &value, sizeof(value)) == sizeof(value)) {
+				ImGui::TableSetColumnIndex(2);
+				ImGui::PushFont(Resources::FontMono);
+
+				if (value == 0) {
+					ImGui::TextDisabled(POINTER_FORMAT, value);
+				} else {
+					ImGui::Text(POINTER_FORMAT, value);
+				}
+
+				ImGui::TableSetColumnIndex(3);
+
+				for (int i = 0; i < sizeof(uintptr_t); i++) {
+					int shift = i * 8;
+					uint8_t byteValue = (value & ((uintptr_t)0xFF << shift)) >> shift;
+
+					if (i > 0) {
+						ImGui::SameLine(0, 0);
+					}
+
+					if (byteValue >= 32 && byteValue <= 126) {
+						ImGui::Text("%c", byteValue);
+					} else {
+						ImGui::TextDisabled(".");
+					}
+				}
+
+				ImGui::PopFont();
+			}
+
+			ImGui::TableSetColumnIndex(4);
+
+			s2::string symbolName;
+			if (handle->GetSymbolName(address, symbolName)) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, .5f, .5f, 1));
+				ImGui::TextUnformatted(symbolName);
+				ImGui::PopStyleColor();
+				ImGui::SameLine();
+			}
+
+			while (currentMemberSize < sizeof(uintptr_t)) {
+				uint16_t size = RenderMember(offset, currentMemberSize, displayOffset, i);
+				if (size == 0) {
+					// On 32 bit, advancing 4 bytes goes to the next row (eg. every possible item)
+					// On 64 bit, advancing 4 bytes goes to the next possible item (eg. float, int32, etc)
+					size = 4;
+				}
+				currentMemberSize += size;
+				ImGui::SameLine();
+			}
+
+			// Slowly reducing bytes allows us to gradually interpret data over multiple rows (eg. a vec3
+			// has 12 bytes which spans 2 lines on 64 bit and 3 lines on 32 bit), which makes it so that
+			// data isn't interpreted until the end of the previously interpreted data. This might be a
+			// little bit buggy when items are partly on screen due to the fact we're using ImGuiListClipper.
+			if (currentMemberSize > 0) {
+				currentMemberSize -= (currentMemberSize >= sizeof(uintptr_t) ? sizeof(uintptr_t) : currentMemberSize);
+			}
+
+			ImGui::NewLine();
+			ImGui::PopID();
 		}
 
-		// Slowly reducing bytes allows us to gradually interpret data over multiple rows (eg. a vec3
-		// has 12 bytes which spans 2 lines on 64 bit and 3 lines on 32 bit), which makes it so that
-		// data isn't interpreted until the end of the previously interpreted data. This might be a
-		// little bit buggy when items are partly on screen due to the fact we're using ImGuiListClipper.
-		if (currentMemberSize > 0) {
-			currentMemberSize -= (currentMemberSize >= sizeof(uintptr_t) ? sizeof(uintptr_t) : currentMemberSize);
-		}
-
-		ImGui::NewLine();
-		ImGui::PopID();
+		ImGui::EndTable();
 	}
 }
