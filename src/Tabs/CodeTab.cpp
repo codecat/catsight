@@ -233,7 +233,7 @@ void CodeTab::Render(float dt)
 			ImGui::TableSetColumnIndex(0);
 			auto region = m_region;
 			Helpers::PointerText(m_inspector, address, [handle, region](uintptr_t p) {
-				if (ImGui::MenuItem("Generate pattern")) {
+				if (ImGui::MenuItem(ICON_FA_CODE_BRANCH " Generate pattern")) {
 					auto pattern = Patterns::Generate(handle, p, region);
 					printf("Generated pattern: \"%s\"\n", pattern.c_str());
 					ImGui::SetClipboardText(pattern);

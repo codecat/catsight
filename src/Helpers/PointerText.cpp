@@ -26,7 +26,7 @@ void Helpers::PointerText(Inspector* inspector, uintptr_t p, const PointerMenuCa
 			ImGui::SetClipboardText(strCopyAddress);
 		}
 
-		if (ImGui::MenuItem("Locate in maps")) {
+		if (ImGui::MenuItem(ICON_FA_SEARCH " Locate in maps")) {
 			auto mapsTab = inspector->GetFirstTab<MapsTab>();
 			if (mapsTab != nullptr) {
 				mapsTab->ShowRegionPointer(p);
