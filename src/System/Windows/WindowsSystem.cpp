@@ -104,6 +104,12 @@ s2::list<ProcessInfo> System::GetProcesses()
 				continue;
 			}
 
+			for (char* p = fullPath; *p != '\0'; p++) {
+				if (*p == '\\') {
+					*p = '/';
+				}
+			}
+
 			auto& newProc = ret.add();
 			newProc.pathFull = fullPath;
 			newProc.pathExe = proc.szExeFile;

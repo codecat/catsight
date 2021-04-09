@@ -116,6 +116,24 @@ void MemoryTab::ScrollToOffset(uintptr_t offset)
 
 s2::string MemoryTab::GetTitleSuffix()
 {
+	if (m_region.m_path.len() > 0) {
+		s2::string ret = "(";
+
+		const char* filename = strrchr(m_region.m_path, '/');
+		if (filename != nullptr) {
+			ret.append(filename + 1);
+		} else {
+			ret.append(m_region.m_path);
+		}
+
+		if (m_region.m_section.len() > 0) {
+			ret.appendf(" [%s]", m_region.m_section.c_str());
+		}
+
+		ret.append(')');
+		return ret;
+	}
+
 	return s2::strprintf("(" POINTER_FORMAT ")", m_region.m_start);
 }
 
