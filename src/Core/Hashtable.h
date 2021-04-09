@@ -32,6 +32,11 @@ public:
 		}
 	}
 
+	void remove(const char* key)
+	{
+		m_dict.remove(hash(key));
+	}
+
 	void sort()
 	{
 		m_dict.sort();
@@ -45,6 +50,11 @@ public:
 	size_t len() const
 	{
 		return m_dict.len();
+	}
+
+	bool contains(const char* key) const
+	{
+		return m_dict.contains(hash(key));
 	}
 
 	bool get(const char* key, TValue& value) const

@@ -124,34 +124,35 @@ public:
 		}
 	}
 
+	void remove(const TKey& key)
+	{
+		int index = indexof(key);
+		if (index == -1) {
+			return;
+		}
+
+		m_entries[index].~entry();
+
+		if (index < m_length) {
+			memmove(m_entries + index, m_entries + index + 1, (m_length - index) * sizeof(entry));
+		}
+		m_length--;
+	}
+
+	bool contains(const TKey& key) const
+	{
+		return indexof(key) != -1;
+	}
+
 	bool get(const TKey& key, TValue& value) const
 	{
-		if (m_length == 0) {
+		int index = indexof(key);
+		if (index == -1) {
 			return false;
 		}
 
-		size_t start = 0;
-		size_t end = m_length;
-
-		while (true) {
-			size_t halfLen = end - start;
-			size_t halfIndex = start + halfLen / 2;
-			assert(halfIndex < m_length);
-			auto& e = m_entries[halfIndex];
-
-			if (key == e.m_key) {
-				value = e.m_value;
-				return true;
-			} else if (halfLen == 1) {
-				return false;
-			} else if (key > e.m_key) {
-				start = halfIndex;
-			} else if (key < e.m_key) {
-				end = halfIndex;
-			}
-		}
-
-		return false;
+		value = m_entries[index].m_value;
+		return true;
 	}
 
 	void sort()
@@ -181,5 +182,35 @@ public:
 
 		m_entries = (entry*)realloc(m_entries, count * sizeof(entry));
 		m_allocSize = count;
+	}
+
+private:
+	int indexof(const TKey& key) const
+	{
+		if (m_length == 0) {
+			return -1;
+		}
+
+		size_t start = 0;
+		size_t end = m_length;
+
+		while (true) {
+			size_t halfLen = end - start;
+			size_t halfIndex = start + halfLen / 2;
+			assert(halfIndex < m_length);
+			auto& e = m_entries[halfIndex];
+
+			if (key == e.m_key) {
+				return halfIndex;
+			} else if (halfLen == 1) {
+				return -1;
+			} else if (key > e.m_key) {
+				start = halfIndex;
+			} else if (key < e.m_key) {
+				end = halfIndex;
+			}
+		}
+
+		return -1;
 	}
 };
