@@ -65,7 +65,7 @@ public:
 
 		size_t newIndex = m_length;
 
-		if (sort && m_length > 0) {
+		if (m_length > 0) {
 			if (key < m_entries[0].m_key) {
 				newIndex = 0;
 			} else if (key > m_entries[m_length - 1].m_key) {
@@ -103,13 +103,11 @@ public:
 		m_length++;
 		ret->m_key = key;
 
-		if (sort) {
-			if (newIndex > 0) {
-				assert(key > m_entries[newIndex - 1].m_key);
-			}
-			if (newIndex < m_length - 1) {
-				assert(key < m_entries[newIndex + 1].m_key);
-			}
+		if (newIndex > 0) {
+			assert(key > m_entries[newIndex - 1].m_key);
+		}
+		if (newIndex < m_length - 1) {
+			assert(key < m_entries[newIndex + 1].m_key);
 		}
 
 		return ret->m_value;
