@@ -3,12 +3,14 @@
 #include <Common.h>
 #include <System/ProcessHandle.h>
 #include <System/ProcessInfo.h>
+#include <Core/Hashtable.h>
 
 class WindowsProcessHandle : public ProcessHandle
 {
 private:
 	void* m_proc = nullptr;
-	bool m_symbols = false;
+	bool m_hasSymbols = false;
+	hashtable<uintptr_t> m_symbolAddresses;
 
 public:
 	WindowsProcessHandle(const ProcessInfo& info);

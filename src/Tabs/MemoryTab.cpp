@@ -191,11 +191,11 @@ bool MemoryTab::RenderBegin(float dt)
 		if (ImGui::IsWindowAppearing()) {
 			ImGui::SetKeyboardFocusHere();
 		}
-		bool actuallyGo = Helpers::InputText("Address", &m_ui_gotoAddressString, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsHexadecimal);
+		bool actuallyGo = Helpers::InputText("Address", &m_ui_gotoAddressString, ImGuiInputTextFlags_EnterReturnsTrue);
 
 		uintptr_t gotoPointer = 0;
 		if (m_ui_gotoAddressString.len() > 0) {
-			gotoPointer = Helpers::EvaluateExpression(m_ui_gotoAddressString);
+			gotoPointer = Helpers::EvaluateExpression(m_inspector, m_ui_gotoAddressString);
 
 			bool valid = m_inspector->m_processHandle->IsReadableMemory(gotoPointer);
 			if (!valid) {

@@ -17,15 +17,23 @@ WindowsProcessHandle::WindowsProcessHandle(const ProcessInfo& info)
 		return;
 	}
 
-	m_symbols = SymInitialize(m_proc, nullptr, true);
-	if (!m_symbols) {
+	m_hasSymbols = SymInitialize(m_proc, nullptr, true);
+	if (!m_hasSymbols) {
 		System::Windows::CheckLastError();
 	}
+
+	SymEnumSymbols(m_proc, 0, "*!*", [](PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID UserContext) -> BOOL {
+		auto handle = (WindowsProcessHandle*)UserContext;
+		handle->m_symbolAddresses.add(pSymInfo->Name, false) = pSymInfo->Address;
+		return true;
+	}, this);
+	m_symbolAddresses.sort();
+	printf("%d symbols\n", (int)m_symbolAddresses.len());
 }
 
 WindowsProcessHandle::~WindowsProcessHandle()
 {
-	if (m_symbols) {
+	if (m_hasSymbols) {
 		SymCleanup(m_proc);
 	}
 
@@ -81,7 +89,7 @@ bool WindowsProcessHandle::IsExecutableMemory(uintptr_t p)
 
 bool WindowsProcessHandle::GetSymbolName(uintptr_t p, s2::string& name)
 {
-	// This is slow! (3 ms)
+	//TODO: This is slow!
 
 	std::scoped_lock lock(__dbgHelpMutex);
 
@@ -104,19 +112,7 @@ bool WindowsProcessHandle::GetSymbolName(uintptr_t p, s2::string& name)
 
 bool WindowsProcessHandle::GetSymbolAddress(const char* name, uintptr_t& p)
 {
-	// This is fast! (0.01 ms)
-
-	std::scoped_lock lock(__dbgHelpMutex);
-
-	SYMBOL_INFO symbol;
-	symbol.SizeOfStruct = sizeof(SYMBOL_INFO);
-	symbol.MaxNameLen = 1;
-	if (!SymFromName(m_proc, name, &symbol)) {
-		return false;
-	}
-
-	p = symbol.Address;
-	return true;
+	return m_symbolAddresses.get(name, p);
 }
 
 s2::list<ProcessMemoryRegion> WindowsProcessHandle::GetMemoryRegions()

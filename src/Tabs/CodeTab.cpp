@@ -122,8 +122,8 @@ void CodeTab::Render(float dt)
 		if (ImGui::IsWindowAppearing()) {
 			ImGui::SetKeyboardFocusHere();
 		}
-		if (Helpers::InputText("Value", &m_ui_findConstantValueString, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsHexadecimal)) {
-			uintptr_t value = Helpers::EvaluateExpression(m_ui_findConstantValueString);
+		if (Helpers::InputText("Value", &m_ui_findConstantValueString, ImGuiInputTextFlags_EnterReturnsTrue)) {
+			uintptr_t value = Helpers::EvaluateExpression(m_inspector, m_ui_findConstantValueString);
 
 			auto handle = m_inspector->m_processHandle;
 			auto region = m_region;

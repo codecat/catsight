@@ -25,6 +25,8 @@ set(CATSIGHT_SOURCES
 	src/System/ProcessMemoryRegion.cpp
 	src/System/ProcessInfo.cpp
 
+	src/Lib/MurmurHash2.cpp
+
 	src/Resources.cpp
 	src/Folder.cpp
 	src/Chrono.cpp

@@ -7,11 +7,6 @@
 #  include <Windows.h>
 #endif
 
-static void do_something()
-{
-	printf("Something!\n");
-}
-
 static void make_test_page()
 {
 	// Create test memory page
