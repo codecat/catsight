@@ -324,6 +324,14 @@ void CodeTab::Render(float dt)
 		ImGui::PopFont();
 		ImGui::SameLine();
 
+		s2::string symbolName;
+		if (handle->GetSymbolName(address, symbolName)) {
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, .5f, .5f, 1));
+			ImGui::Text("(%s)", symbolName.c_str());
+			ImGui::PopStyleColor();
+			ImGui::SameLine();
+		}
+
 		if (valid) {
 			if (m_invalidated) {
 				line.m_jumpsLines = 0;
