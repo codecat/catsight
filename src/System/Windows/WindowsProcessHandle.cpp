@@ -24,7 +24,7 @@ WindowsProcessHandle::WindowsProcessHandle(const ProcessInfo& info)
 
 	SymEnumSymbols(m_proc, 0, "*!*", [](PSYMBOL_INFO pSymInfo, ULONG SymbolSize, PVOID UserContext) -> BOOL {
 		auto handle = (WindowsProcessHandle*)UserContext;
-		handle->m_symbolAddresses.add(pSymInfo->Name, false) = pSymInfo->Address;
+		handle->m_symbolAddresses.add_unsorted(pSymInfo->Name) = pSymInfo->Address;
 		return true;
 	}, this);
 	m_symbolAddresses.sort();
