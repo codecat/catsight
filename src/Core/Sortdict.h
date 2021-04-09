@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Common.h>
-#include <Lib/MurmurHash2.h>
 
 #include <cstring>
 
@@ -25,6 +24,17 @@ public:
 	{
 	}
 
+	sortdict(const sortdict& other)
+	{
+		m_length = other.m_length;
+		if (m_length > 0) {
+			ensure_memory(m_length);
+		}
+		for (size_t i = 0; i < m_length; i++) {
+			m_entries[i] = other.m_entries[i];
+		}
+	}
+
 	~sortdict()
 	{
 		if (m_entries != nullptr) {
@@ -37,7 +47,16 @@ public:
 		return m_length;
 	}
 
-	TValue& add(const TKey& key, bool sort = true)
+	TValue& add_unsorted(const TKey& key)
+	{
+		ensure_memory(m_length + 1);
+		entry* ret = new (m_entries + m_length) entry;
+		m_length++;
+		ret->m_key = key;
+		return ret->m_value;
+	}
+
+	TValue& add(const TKey& key)
 	{
 		ensure_memory(m_length + 1);
 
@@ -95,7 +114,11 @@ public:
 
 	void add(const TKey& key, const TValue& value, bool sort = true)
 	{
-		add(key, sort) = value;
+		if (sort) {
+			add(key) = value;
+		} else {
+			add_unsorted(key) = value;
+		}
 	}
 
 	bool get(const TKey& key, TValue& value) const
