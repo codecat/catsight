@@ -5,7 +5,7 @@
 
 #include <cstring>
 
-template<typename TValue, bool Sorted = true>
+template<typename TValue>
 class hashtable
 {
 public:
@@ -44,7 +44,7 @@ public:
 		uint64_t hash = MurmurHash64A(key, strlen(key), 0);
 		size_t newIndex = m_length;
 
-		if (Sorted && sort && m_length > 0) {
+		if (sort && m_length > 0) {
 			if (hash < m_entries[0].m_hash) {
 				newIndex = 0;
 			} else if (hash > m_entries[m_length - 1].m_hash) {
@@ -82,7 +82,7 @@ public:
 		m_length++;
 		ret->m_hash = hash;
 
-		if (Sorted && sort) {
+		if (sort) {
 			if (newIndex > 0) {
 				assert(hash > m_entries[newIndex - 1].m_hash);
 			}
@@ -107,35 +107,24 @@ public:
 
 		uint64_t hash = MurmurHash64A(key, strlen(key), 0);
 
-		if (Sorted) {
-			size_t start = 0;
-			size_t end = m_length;
+		size_t start = 0;
+		size_t end = m_length;
 
-			while (true) {
-				size_t halfLen = end - start;
-				size_t halfIndex = start + halfLen / 2;
-				assert(halfIndex < m_length);
-				auto& e = m_entries[halfIndex];
+		while (true) {
+			size_t halfLen = end - start;
+			size_t halfIndex = start + halfLen / 2;
+			assert(halfIndex < m_length);
+			auto& e = m_entries[halfIndex];
 
-				if (hash == e.m_hash) {
-					value = e.m_value;
-					return true;
-				} else if (halfLen == 1) {
-					return false;
-				} else if (hash > e.m_hash) {
-					start = halfIndex;
-				} else if (hash < e.m_hash) {
-					end = halfIndex;
-				}
-			}
-
-		} else {
-			for (size_t i = 0; i < m_length; i++) {
-				auto& e = m_entries[i];
-				if (e.m_hash == hash) {
-					value = e.m_value;
-					return true;
-				}
+			if (hash == e.m_hash) {
+				value = e.m_value;
+				return true;
+			} else if (halfLen == 1) {
+				return false;
+			} else if (hash > e.m_hash) {
+				start = halfIndex;
+			} else if (hash < e.m_hash) {
+				end = halfIndex;
 			}
 		}
 
