@@ -16,7 +16,13 @@ void Helpers::DataButton(Inspector* inspector, uintptr_t p, int depth)
 	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(buttonHue, 0.7f, 0.7f));
 	ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(buttonHue, 0.8f, 0.8f));
 
-	if (ImGui::Button(ICON_FA_DATABASE, ImVec2(30, 0))) {
+	s2::string buttonLabel = ICON_FA_DATABASE;
+	s2::string symbolName;
+	if (inspector->m_processHandle->GetSymbolName(p, symbolName)) {
+		buttonLabel.appendf(" %s", symbolName.c_str());
+	}
+
+	if (ImGui::Button(buttonLabel)) {
 		_dataTabs.clear();
 		for (auto tab : inspector->m_tabs) {
 			auto dataTab = dynamic_cast<DataTab*>(tab);

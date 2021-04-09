@@ -16,7 +16,13 @@ void Helpers::CodeButton(Inspector* inspector, uintptr_t p, int depth)
 	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(buttonHue, 0.7f, 0.7f));
 	ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(buttonHue, 0.8f, 0.8f));
 
-	if (ImGui::Button(ICON_FA_CODE_BRANCH, ImVec2(30, 0))) {
+	s2::string buttonLabel = ICON_FA_CODE_BRANCH;
+	s2::string symbolName;
+	if (inspector->m_processHandle->GetSymbolName(p, symbolName)) {
+		buttonLabel.appendf(" %s", symbolName.c_str());
+	}
+
+	if (ImGui::Button(buttonLabel)) {
 		_codeTabs.clear();
 		for (auto tab : inspector->m_tabs) {
 			auto codeTab = dynamic_cast<CodeTab*>(tab);
