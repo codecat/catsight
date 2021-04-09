@@ -90,7 +90,7 @@ void Explorer::SetStyle()
 	style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
 	style.Colors[ImGuiCol_TableHeaderBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.65f);
 	style.Colors[ImGuiCol_TableBorderStrong] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-	style.Colors[ImGuiCol_TableBorderLight] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+	style.Colors[ImGuiCol_TableBorderLight] = ImVec4(0.26f, 0.59f, 0.98f, 0.10f);
 	style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.9f);
 
 	// Comment this for light theme

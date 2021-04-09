@@ -208,186 +208,196 @@ void CodeTab::Render(float dt)
 
 	int lineDepth = 0;
 
-	int bytesOffset = 0;
-	for (int i = 0; i < m_itemsPerPage + 1; i++) {
-		uintptr_t offset = m_topOffset + bytesOffset;
-		uintptr_t address = base + offset;
+	if (ImGui::BeginTable("Code", 5, ImGuiTableFlags_Resizable)) {
+		ImGui::TableSetupColumn("Address", ImGuiTableColumnFlags_WidthFixed);
+		ImGui::TableSetupColumn("Offset", ImGuiTableColumnFlags_WidthFixed, 100);
+		ImGui::TableSetupColumn("Bytes", ImGuiTableColumnFlags_WidthFixed, 200);
+		ImGui::TableSetupColumn("Code", ImGuiTableColumnFlags_WidthStretch, 0.4f);
+		ImGui::TableSetupColumn("Comments", ImGuiTableColumnFlags_WidthStretch, 0.6f);
+		ImGui::TableHeadersRow();
 
-		intptr_t displayOffset = (intptr_t)offset - (intptr_t)m_baseOffset;
+		int bytesOffset = 0;
+		for (int i = 0; i < m_itemsPerPage + 1; i++) {
+			uintptr_t offset = m_topOffset + bytesOffset;
+			uintptr_t address = base + offset;
 
-		assert((size_t)i < m_lineDetails.len());
-		auto& line = m_lineDetails[i];
+			intptr_t displayOffset = (intptr_t)offset - (intptr_t)m_baseOffset;
 
-		ImGui::PushID((void*)address);
+			assert((size_t)i < m_lineDetails.len());
+			auto& line = m_lineDetails[i];
 
-		auto region = m_region;
-		Helpers::PointerText(m_inspector, address, [handle, region](uintptr_t p) {
-			if (ImGui::MenuItem("Generate pattern")) {
-				auto pattern = Patterns::Generate(handle, p, region);
-				printf("Generated pattern: \"%s\"\n", pattern.c_str());
-				ImGui::SetClipboardText(pattern);
-			}
-		});
-		ImGui::SameLine();
+			ImGui::TableNextRow(ImGuiTableRowFlags_None, m_itemHeight);
 
-		float column = 130.0f;
+			ImGui::PushID((void*)address);
 
-		ImGui::PushFont(Resources::FontMono);
-		if (ImGui::Button("$")) {
-			if (offset == m_baseOffset) {
-				m_hasBaseOffset = !m_hasBaseOffset;
-			} else {
-				m_hasBaseOffset = true;
-			}
-			m_baseOffset = offset;
-		}
-
-		column += 30;
-		ImGui::SameLine(column);
-
-		if (m_hasBaseOffset) {
-			ImGui::PushStyleColor(ImGuiCol_Text, ImColor::HSV(0.0f, 0.65f, 1.0f).Value);
-			if (displayOffset == 0) {
-				ImGui::TextUnformatted("$ ==>");
-			} else {
-				const char* format = "$+" OFFSET_FORMAT;
-				if (displayOffset < 0) {
-					format = "$-" OFFSET_FORMAT;
+			ImGui::TableSetColumnIndex(0);
+			auto region = m_region;
+			Helpers::PointerText(m_inspector, address, [handle, region](uintptr_t p) {
+				if (ImGui::MenuItem("Generate pattern")) {
+					auto pattern = Patterns::Generate(handle, p, region);
+					printf("Generated pattern: \"%s\"\n", pattern.c_str());
+					ImGui::SetClipboardText(pattern);
 				}
-				uintptr_t absDisplayOffset = (uintptr_t)(displayOffset < 0 ? displayOffset * -1 : displayOffset);
-				ImGui::Text(format, absDisplayOffset);
-			}
-			ImGui::PopStyleColor();
+			});
 
-			column += 70;
-			ImGui::SameLine(column);
-		}
+			ImGui::PushFont(Resources::FontMono);
 
-		uint8_t buffer[MAX_INSTRUCTION_SIZE];
-		size_t bufferSize = handle->ReadMemory(address, buffer, sizeof(buffer));
-
-		// Decode instruction
-		ZydisDecodedInstruction instr;
-		bool valid = m_disasm.Decode(instr, buffer, bufferSize);
-		size_t instrSize = valid ? instr.length : 1;
-		bytesOffset += instrSize;
-
-		// Set instruction color
-		ImVec4 color = ImGui::GetStyleColorVec4(ImGuiCol_Text);
-		if (instr.mnemonic == ZYDIS_MNEMONIC_NOP || instr.mnemonic == ZYDIS_MNEMONIC_INT3) {
-			color = ImVec4(.5f, .5f, .5f, 1);
-		} else if (instr.meta.category == ZYDIS_CATEGORY_CALL) {
-			color = ImVec4(1, .5f, .5f, 1);
-		} else if (instr.meta.category == ZYDIS_CATEGORY_RET) {
-			color = ImVec4(1, 1, .5f, 1);
-		} else if (instr.meta.branch_type != ZYDIS_BRANCH_TYPE_NONE) {
-			color = ImVec4(.5f, 1, 1, 1);
-		}
-
-		ImGui::PushStyleColor(ImGuiCol_Text, color);
-
-		// Show instruction bytes
-		auto groups = m_disasm.GetByteGroups(instr);
-
-		s2::string strBytes;
-		for (size_t j = 0; j < instrSize; j++) {
-			if (j > 0) {
-				if (j == groups.m_sizePrefix) {
-					strBytes.append(':');
-				} else if (j == groups.m_sizePrefix + groups.m_sizeOpcode) {
-					strBytes.append(' ');
-				} else if (j == groups.m_sizePrefix + groups.m_sizeOpcode + groups.m_sizeGroup1) {
-					strBytes.append(' ');
-				} else if (j == groups.m_sizePrefix + groups.m_sizeOpcode + groups.m_sizeGroup1 + groups.m_sizeGroup2) {
-					strBytes.append(' ');
-				} else if (j == groups.m_sizePrefix + groups.m_sizeOpcode + groups.m_sizeGroup1 + groups.m_sizeGroup2 + groups.m_sizeGroup3) {
-					strBytes.append(' ');
+			ImGui::TableSetColumnIndex(1);
+			if (ImGui::Button("$")) {
+				if (offset == m_baseOffset) {
+					m_hasBaseOffset = !m_hasBaseOffset;
+				} else {
+					m_hasBaseOffset = true;
 				}
+				m_baseOffset = offset;
 			}
 
-			strBytes.appendf("%02X", buffer[j]);
-		}
-		ImGui::Text("%s", strBytes.c_str());
-
-		column += 200;
-		ImGui::SameLine(column);
-
-		// Remember position of instruction text column for branch line drawing later on
-		auto instructionPos = ImGui::GetCursorScreenPos();
-		instructionPos.x -= 5.5f;
-		instructionPos.y += m_itemHeight / 2 - 0.5f;
-
-		// Show formatted instruction text
-		ImGui::TextUnformatted(m_disasm.Format(instr, address));
-		ImGui::PopStyleColor();
-
-		ImGui::PopFont();
-		ImGui::SameLine();
-
-		s2::string symbolName;
-		if (handle->GetSymbolName(address, symbolName)) {
-			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, .5f, .5f, 1));
-			ImGui::Text("(%s)", symbolName.c_str());
-			ImGui::PopStyleColor();
 			ImGui::SameLine();
-		}
 
-		if (valid) {
-			if (m_invalidated) {
-				line.m_jumpsLines = 0;
+			if (m_hasBaseOffset) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImColor::HSV(0.0f, 0.65f, 1.0f).Value);
+				if (displayOffset == 0) {
+					ImGui::TextUnformatted("$ ==>");
+				} else {
+					const char* format = "$+" OFFSET_FORMAT;
+					if (displayOffset < 0) {
+						format = "$-" OFFSET_FORMAT;
+					}
+					uintptr_t absDisplayOffset = (uintptr_t)(displayOffset < 0 ? displayOffset * -1 : displayOffset);
+					ImGui::Text(format, absDisplayOffset);
+				}
+				ImGui::PopStyleColor();
 			}
 
-			// Go through all instruction operands and find stuff we want to display
-			for (uint8_t j = 0; j < instr.operand_count; j++) {
-				uintptr_t operandValue = GetOperandValue(instr, j, address);
+			ImGui::TableSetColumnIndex(2);
 
-				if (handle->IsReadableMemory(operandValue)) {
-					if (m_invalidated) {
-						if (instr.meta.branch_type != ZYDIS_BRANCH_TYPE_NONE && instr.meta.category != ZYDIS_CATEGORY_CALL) {
-							intptr_t jumpOffsetBytes = operandValue - address;
+			uint8_t buffer[MAX_INSTRUCTION_SIZE];
+			size_t bufferSize = handle->ReadMemory(address, buffer, sizeof(buffer));
 
-							//TODO: Support backwards jumps
-							if (jumpOffsetBytes > 0) {
-								line.m_jumpsLines = 0;
-								line.m_depth = ++lineDepth;
-								int ip = 0;
+			// Decode instruction
+			ZydisDecodedInstruction instr;
+			bool valid = m_disasm.Decode(instr, buffer, bufferSize);
+			size_t instrSize = valid ? instr.length : 1;
+			bytesOffset += instrSize;
 
-								while (ip < jumpOffsetBytes) {
-									ZydisDecodedInstruction instr;
-									if (!m_disasm.Decode(instr, handle, address + ip)) {
-										break;
-									}
+			// Set instruction color
+			ImVec4 color = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+			if (instr.mnemonic == ZYDIS_MNEMONIC_NOP || instr.mnemonic == ZYDIS_MNEMONIC_INT3) {
+				color = ImVec4(.5f, .5f, .5f, 1);
+			} else if (instr.meta.category == ZYDIS_CATEGORY_CALL) {
+				color = ImVec4(1, .5f, .5f, 1);
+			} else if (instr.meta.category == ZYDIS_CATEGORY_RET) {
+				color = ImVec4(1, 1, .5f, 1);
+			} else if (instr.meta.branch_type != ZYDIS_BRANCH_TYPE_NONE) {
+				color = ImVec4(.5f, 1, 1, 1);
+			}
 
-									ip += instr.length;
-									line.m_jumpsLines++;
-									if (line.m_jumpsLines > m_itemsPerPage) {
-										break;
+			ImGui::PushStyleColor(ImGuiCol_Text, color);
+
+			// Show instruction bytes
+			auto groups = m_disasm.GetByteGroups(instr);
+
+			s2::string strBytes;
+			for (size_t j = 0; j < instrSize; j++) {
+				if (j > 0) {
+					if (j == groups.m_sizePrefix) {
+						strBytes.append(':');
+					} else if (j == groups.m_sizePrefix + groups.m_sizeOpcode) {
+						strBytes.append(' ');
+					} else if (j == groups.m_sizePrefix + groups.m_sizeOpcode + groups.m_sizeGroup1) {
+						strBytes.append(' ');
+					} else if (j == groups.m_sizePrefix + groups.m_sizeOpcode + groups.m_sizeGroup1 + groups.m_sizeGroup2) {
+						strBytes.append(' ');
+					} else if (j == groups.m_sizePrefix + groups.m_sizeOpcode + groups.m_sizeGroup1 + groups.m_sizeGroup2 + groups.m_sizeGroup3) {
+						strBytes.append(' ');
+					}
+				}
+
+				strBytes.appendf("%02X", buffer[j]);
+			}
+			ImGui::Text("%s", strBytes.c_str());
+
+			ImGui::TableSetColumnIndex(3);
+
+			// Remember position of instruction text column for branch line drawing later on
+			auto instructionPos = ImGui::GetCursorScreenPos();
+			instructionPos.x -= 5.5f;
+			instructionPos.y += m_itemHeight / 2 - 0.5f;
+
+			// Show formatted instruction text
+			ImGui::TextUnformatted(m_disasm.Format(instr, address));
+			ImGui::PopStyleColor();
+
+			ImGui::PopFont();
+
+			ImGui::TableSetColumnIndex(4);
+
+			s2::string symbolName;
+			if (handle->GetSymbolName(address, symbolName)) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, .5f, .5f, 1));
+				ImGui::TextUnformatted(symbolName);
+				ImGui::PopStyleColor();
+				ImGui::SameLine();
+			}
+
+			if (valid) {
+				if (m_invalidated) {
+					line.m_jumpsLines = 0;
+				}
+
+				// Go through all instruction operands and find stuff we want to display
+				for (uint8_t j = 0; j < instr.operand_count; j++) {
+					uintptr_t operandValue = GetOperandValue(instr, j, address);
+
+					if (handle->IsReadableMemory(operandValue)) {
+						if (m_invalidated) {
+							if (instr.meta.branch_type != ZYDIS_BRANCH_TYPE_NONE && instr.meta.category != ZYDIS_CATEGORY_CALL) {
+								intptr_t jumpOffsetBytes = operandValue - address;
+
+								//TODO: Support backwards jumps
+								if (jumpOffsetBytes > 0) {
+									line.m_jumpsLines = 0;
+									line.m_depth = ++lineDepth;
+									int ip = 0;
+
+									while (ip < jumpOffsetBytes) {
+										ZydisDecodedInstruction instr;
+										if (!m_disasm.Decode(instr, handle, address + ip)) {
+											break;
+										}
+
+										ip += instr.length;
+										line.m_jumpsLines++;
+										if (line.m_jumpsLines > m_itemsPerPage) {
+											break;
+										}
 									}
 								}
 							}
 						}
-					}
 
-					m_typeRenderer.DetectAndRenderType(operandValue);
-				} else {
-					m_typeRenderer.DetectAndRenderType(operandValue, instr.operands[j].size / 8);
+						m_typeRenderer.DetectAndRenderType(operandValue);
+					} else {
+						m_typeRenderer.DetectAndRenderType(operandValue, instr.operands[j].size / 8);
+					}
+				}
+
+				// Draw lines
+				if (line.m_jumpsLines != 0) {
+					auto draw = ImGui::GetWindowDrawList();
+					float offsetX = 5 * line.m_depth;
+					draw->PathLineTo(ImVec2(instructionPos.x, instructionPos.y));
+					draw->PathLineTo(ImVec2(instructionPos.x - offsetX, instructionPos.y));
+					draw->PathLineTo(ImVec2(instructionPos.x - offsetX, instructionPos.y + m_itemHeight * line.m_jumpsLines));
+					draw->PathLineTo(ImVec2(instructionPos.x, instructionPos.y + m_itemHeight * line.m_jumpsLines));
+					draw->PathStroke(ImGui::GetColorU32(color));
 				}
 			}
 
-			// Draw lines
-			if (line.m_jumpsLines != 0) {
-				auto draw = ImGui::GetWindowDrawList();
-				float offsetX = 5 * line.m_depth;
-				draw->PathLineTo(ImVec2(instructionPos.x, instructionPos.y));
-				draw->PathLineTo(ImVec2(instructionPos.x - offsetX, instructionPos.y));
-				draw->PathLineTo(ImVec2(instructionPos.x - offsetX, instructionPos.y + m_itemHeight * line.m_jumpsLines));
-				draw->PathLineTo(ImVec2(instructionPos.x, instructionPos.y + m_itemHeight * line.m_jumpsLines));
-				draw->PathStroke(ImGui::GetColorU32(color));
-			}
+			ImGui::PopID();
 		}
 
-		ImGui::NewLine();
-		ImGui::PopID();
+		ImGui::EndTable();
 	}
 }
 
