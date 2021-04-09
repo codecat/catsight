@@ -38,6 +38,9 @@ public:
 	~sortdict()
 	{
 		if (m_entries != nullptr) {
+			for (size_t i = 0; i < m_length; i++) {
+				m_entries[i].~entry();
+			}
 			free(m_entries);
 		}
 	}
