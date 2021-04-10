@@ -5,7 +5,6 @@
 #include <Resources.h>
 #include <Helpers/DataButton.h>
 #include <Helpers/CodeButton.h>
-#include <Helpers/PointerText.h>
 
 #include <hello_imgui.h>
 
@@ -124,7 +123,7 @@ void DataTab::Render(float dt)
 
 			ImGui::TableSetColumnIndex(0);
 
-			Helpers::PointerText(m_inspector, address);
+			RenderAddress(address);
 			ImGui::SameLine();
 
 			ImGui::TableSetColumnIndex(1);

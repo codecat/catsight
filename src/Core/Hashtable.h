@@ -62,6 +62,16 @@ public:
 		return m_dict.get(hash(key), value);
 	}
 
+	TValue& at(int index)
+	{
+		return m_dict.at(index).m_value;
+	}
+
+	const TValue& at(int index) const
+	{
+		return m_dict.at(index).m_value;
+	}
+
 protected:
 	uint64_t hash(const char* key) const
 	{

@@ -39,6 +39,8 @@ public:
 protected:
 	virtual intptr_t GetScrollAmount(int wheel) override;
 
+	virtual void RenderAddressContextMenu(uintptr_t p) override;
+
 private:
 	uintptr_t DisassembleBack(const uint8_t* data, size_t size, uintptr_t ip, int n);
 

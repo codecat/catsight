@@ -8,7 +8,6 @@
 #include <Helpers/MemoryValidator.h>
 #include <Helpers/CodeButton.h>
 #include <Helpers/DataButton.h>
-#include <Helpers/PointerText.h>
 #include <Helpers/ImGuiString.h>
 #include <Helpers/Expression.h>
 
@@ -231,14 +230,7 @@ void CodeTab::Render(float dt)
 			ImGui::PushID((void*)address);
 
 			ImGui::TableSetColumnIndex(0);
-			auto region = m_region;
-			Helpers::PointerText(m_inspector, address, [handle, region](uintptr_t p) {
-				if (ImGui::MenuItem(ICON_FA_CODE_BRANCH " Generate pattern")) {
-					auto pattern = Patterns::Generate(handle, p, region);
-					printf("Generated pattern: \"%s\"\n", pattern.c_str());
-					ImGui::SetClipboardText(pattern);
-				}
-			});
+			RenderAddress(address);
 
 			ImGui::PushFont(Resources::FontMono);
 
@@ -332,6 +324,16 @@ void CodeTab::Render(float dt)
 
 			ImGui::TableSetColumnIndex(4);
 
+			// Maybe show the label of this address
+			s2::string labelName;
+			if (m_inspector->m_labels.GetLabel(address, labelName, m_region)) {
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, .75f, .5f, 1));
+				ImGui::TextUnformatted(labelName);
+				ImGui::PopStyleColor();
+				ImGui::SameLine();
+			}
+
+			// Maybe show the symbol name of this address
 			s2::string symbolName;
 			if (handle->GetSymbolName(address, symbolName)) {
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, .5f, .5f, 1));
@@ -434,6 +436,19 @@ intptr_t CodeTab::GetScrollAmount(int wheel)
 		uintptr_t newOffset = start + bufferOffset;
 
 		return newOffset - address;
+	}
+}
+
+void CodeTab::RenderAddressContextMenu(uintptr_t p)
+{
+	MemoryTab::RenderAddressContextMenu(p);
+
+	ImGui::Separator();
+
+	if (ImGui::MenuItem(ICON_FA_CODE_BRANCH " Generate pattern")) {
+		auto pattern = Patterns::Generate(m_inspector->m_processHandle, p, m_region);
+		printf("Generated pattern: \"%s\"\n", pattern.c_str());
+		ImGui::SetClipboardText(pattern);
 	}
 }
 

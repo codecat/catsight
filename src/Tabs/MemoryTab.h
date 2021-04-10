@@ -33,6 +33,10 @@ private:
 	uintptr_t m_ui_gotoAddress = 0;
 	s2::string m_ui_gotoAddressString;
 
+	bool m_ui_setLabelPopupShow = false;
+	uintptr_t m_ui_setLabelAddress = 0;
+	s2::string m_ui_setLabelString;
+
 	bool m_wasInvalidatedAtBegin = false;
 
 public:
@@ -59,4 +63,7 @@ public:
 
 protected:
 	virtual intptr_t GetScrollAmount(int wheel);
+
+	virtual void RenderAddress(uintptr_t p);
+	virtual void RenderAddressContextMenu(uintptr_t p);
 };

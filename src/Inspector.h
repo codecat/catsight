@@ -6,6 +6,7 @@
 #include <Tasks/Tasks.h>
 #include <Tab.h>
 #include <Script/Engine.h>
+#include <Helpers/LabelManager.h>
 
 #include <mutex>
 
@@ -27,6 +28,8 @@ public:
 	s2::list<Tab*> m_tabs;
 
 	Script::Engine m_script;
+
+	LabelManager m_labels;
 
 public:
 	Inspector(const ProcessInfo& info);

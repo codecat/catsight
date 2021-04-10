@@ -59,6 +59,7 @@ set(CATSIGHT_SOURCES
 	src/Helpers/ImGuiString.cpp
 	src/Helpers/TypeRenderer.cpp
 	src/Helpers/Expression.cpp
+	src/Helpers/LabelManager.cpp
 
 	src/Script/Engine.cpp
 	src/Script/Types/Pointer.cpp

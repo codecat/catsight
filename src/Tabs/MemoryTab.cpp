@@ -4,6 +4,7 @@
 #include <Helpers/MemoryValidator.h>
 #include <Helpers/CodeButton.h>
 #include <Helpers/DataButton.h>
+#include <Helpers/PointerText.h>
 #include <Helpers/ImGuiString.h>
 #include <Helpers/Expression.h>
 
@@ -236,6 +237,36 @@ bool MemoryTab::RenderBegin(float dt)
 		ImGui::EndPopup();
 	}
 
+	// Set label dialog
+	if (m_ui_setLabelPopupShow) {
+		ImGui::OpenPopup("SetLabel");
+		m_ui_setLabelPopupShow = false;
+	}
+	if (ImGui::BeginPopup("SetLabel")) {
+		if (ImGui::IsWindowAppearing()) {
+			ImGui::SetKeyboardFocusHere();
+		}
+		bool actuallySet = Helpers::InputText("Label", &m_ui_setLabelString, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue);
+
+		uintptr_t existing;
+		bool labelExists = m_inspector->m_labels.GetAddress(m_ui_setLabelString, existing);
+		if (labelExists && existing != m_ui_setLabelAddress) {
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, .5f, 1));
+			ImGui::Text("Label already exists at " POINTER_FORMAT ", saving will overwrite!", existing);
+			ImGui::PopStyleColor();
+		}
+
+		if (actuallySet) {
+			if (labelExists) {
+				m_inspector->m_labels.Remove(existing);
+			}
+			m_inspector->m_labels.Set(m_ui_setLabelAddress, m_ui_setLabelString);
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	}
+
 	// Handle mouse previous and next buttons to cycle through history
 	if (ImGui::IsMouseClicked(3)) {
 		GoToHistory(-1);
@@ -314,4 +345,26 @@ void MemoryTab::RenderEnd(float dt)
 intptr_t MemoryTab::GetScrollAmount(int wheel)
 {
 	return (wheel * -1) * 3 * sizeof(uintptr_t);
+}
+
+void MemoryTab::RenderAddress(uintptr_t p)
+{
+	Helpers::PointerText(m_inspector, p, [this](uintptr_t p) {
+		RenderAddressContextMenu(p);
+	});
+}
+
+void MemoryTab::RenderAddressContextMenu(uintptr_t p)
+{
+	s2::string label;
+	bool hasLabel = m_inspector->m_labels.GetLabel(p, label, m_region);
+
+	if (ImGui::MenuItem(ICON_FA_EDIT " Set label", nullptr, nullptr, m_region.m_path.len() > 0)) {
+		m_ui_setLabelPopupShow = true;
+		m_ui_setLabelAddress = p;
+		m_ui_setLabelString = label;
+	}
+	if (ImGui::MenuItem(ICON_FA_TRASH " Clear label", nullptr, nullptr, hasLabel)) {
+		m_inspector->m_labels.Remove(p, m_region);
+	}
 }

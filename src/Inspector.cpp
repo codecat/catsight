@@ -12,6 +12,7 @@
 
 Inspector::Inspector(const ProcessInfo& info)
 	: m_processInfo(info)
+	, m_labels(this)
 {
 	m_title = m_processInfo.pathExe;
 	m_processHandle = System::OpenProcessHandle(info);

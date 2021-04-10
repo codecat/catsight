@@ -17,9 +17,12 @@ void Helpers::CodeButton(Inspector* inspector, uintptr_t p, int depth)
 	ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(buttonHue, 0.8f, 0.8f));
 
 	s2::string buttonLabel = ICON_FA_CODE_BRANCH;
-	s2::string symbolName;
-	if (inspector->m_processHandle->GetSymbolName(p, symbolName)) {
-		buttonLabel.appendf(" %s", symbolName.c_str());
+
+	s2::string name;
+	if (inspector->m_labels.GetLabel(p, name)) {
+		buttonLabel.appendf(" %s", name.c_str());
+	} else if (inspector->m_processHandle->GetSymbolName(p, name)) {
+		buttonLabel.appendf(" %s", name.c_str());
 	}
 
 	if (ImGui::Button(buttonLabel)) {

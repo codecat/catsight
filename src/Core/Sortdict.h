@@ -122,6 +122,16 @@ public:
 		}
 	}
 
+	void set(const TKey& key, const TValue& value)
+	{
+		int index = indexof(key);
+		if (index == -1) {
+			assert(false);
+			return;
+		}
+		m_entries[index].m_value = value;
+	}
+
 	void remove(const TKey& key)
 	{
 		int index = indexof(key);
@@ -151,6 +161,18 @@ public:
 
 		value = m_entries[index].m_value;
 		return true;
+	}
+
+	entry& at(int index)
+	{
+		assert(index >= 0 && index < m_length);
+		return m_entries[index];
+	}
+
+	const entry& at(int index) const
+	{
+		assert(index >= 0 && index < m_length);
+		return m_entries[index];
 	}
 
 	void sort()

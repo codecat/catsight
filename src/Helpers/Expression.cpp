@@ -5,11 +5,15 @@
 
 uintptr_t Helpers::EvaluateExpression(Inspector* inspector, const char* sz)
 {
-	//TODO: Actually evaluate expressions. For now, only reads hex values and symbol names!
+	//TODO: Actually evaluate expressions. For now, only reads hex values, labels, and symbol names!
+	// Could use Lua for this?
 
 	uintptr_t ret = 0;
 
-	auto tmStart = Chrono::Now();
+	if (inspector->m_labels.GetAddress(sz, ret)) {
+		return ret;
+	}
+
 	if (inspector->m_processHandle->GetSymbolAddress(sz, ret)) {
 		return ret;
 	}
