@@ -38,7 +38,7 @@ void LabelManager::Set(uintptr_t p, const char* label, const ProcessMemoryRegion
 		return;
 	}
 
-	uintptr_t rva = p - region.m_start;
+	uintptr_t rva = p - region.m_moduleBase;
 
 	s2::string existingName;
 	if (mod->m_labels.get(rva, existingName)) {
@@ -70,7 +70,7 @@ void LabelManager::Remove(uintptr_t p, const ProcessMemoryRegion& region)
 		return;
 	}
 
-	uintptr_t rva = p - region.m_start;
+	uintptr_t rva = p - region.m_moduleBase;
 
 	s2::string name;
 	if (!mod->m_labels.get(rva, name)) {
@@ -98,18 +98,19 @@ bool LabelManager::GetLabel(uintptr_t p, s2::string& label, const ProcessMemoryR
 		return false;
 	}
 
-	uintptr_t rva = p - region.m_start;
+	uintptr_t rva = p - region.m_moduleBase;
 
 	return mod->m_labels.get(rva, label);
 }
 
 bool LabelManager::GetAddress(const char* label, uintptr_t& p)
 {
-	ProcessMemoryRegion region;
-	if (!m_inspector->GetMemoryRegion(p, region)) {
-		return false;
+	for (auto& region : m_inspector->m_processRegions) {
+		if (GetAddress(label, p, region)) {
+			return true;
+		}
 	}
-	return GetAddress(label, p, region);
+	return false;
 }
 
 bool LabelManager::GetAddress(const char* label, uintptr_t& p, const ProcessMemoryRegion& region)
@@ -124,7 +125,7 @@ bool LabelManager::GetAddress(const char* label, uintptr_t& p, const ProcessMemo
 		return false;
 	}
 
-	p = region.m_start + ret;
+	p = region.m_moduleBase + ret;
 
 	return true;
 }

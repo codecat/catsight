@@ -203,6 +203,7 @@ s2::list<ProcessMemoryRegion> WindowsProcessHandle::GetMemoryRegions()
 		region.m_start = (uintptr_t)mbi.BaseAddress;
 		region.m_end = (uintptr_t)mbi.BaseAddress + mbi.RegionSize;
 		if (pageModule != nullptr) {
+			region.m_moduleBase = pageModule->m_base;
 			region.m_entryPoint = pageModule->m_entryPoint;
 			region.m_path = s2::string(pageModule->m_mod.szExePath).replace('\\', '/');
 		}

@@ -201,6 +201,8 @@ s2::list<ProcessMemoryRegion> LinuxProcessHandle::GetMemoryRegions()
 
 		if (pageModule != nullptr) {
 			region.m_flags |= pmrf_Image;
+
+			region.m_moduleBase = pageModule->m_start;
 			region.m_entryPoint = pageModule->m_entryPoint;
 
 			/*
