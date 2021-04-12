@@ -46,7 +46,7 @@ void MemoryTab::GoTo(uintptr_t p, bool addToHistory)
 		return;
 	}
 
-	if (!m_region.Contains(p)) {
+	if (!m_hasValidRegion || !m_region.Contains(p)) {
 		SetRegion(p);
 	}
 	ScrollTo(p);
