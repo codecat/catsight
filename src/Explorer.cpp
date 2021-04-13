@@ -15,6 +15,7 @@ void Explorer::Run()
 	m_params.callbacks.SetupImGuiStyle = [this]() { SetStyle(); };
 	m_params.callbacks.LoadAdditionalFonts = [this]() { LoadFonts(); };
 	m_params.callbacks.PostInit = [this]() { BeginApp(); };
+	m_params.callbacks.BeforeExit = [this]() { EndApp(); };
 
 	m_params.appWindowParams.windowSize = ImVec2(1200, 900);
 	m_params.appWindowParams.windowTitle = "Catsight";
@@ -130,6 +131,11 @@ void Explorer::LoadFonts()
 void Explorer::BeginApp()
 {
 	m_imgBackground = HelloImGui::ImageGl::FactorImage("images/background.jpg");
+}
+
+void Explorer::EndApp()
+{
+	m_imgBackground = nullptr;
 }
 
 Inspector* Explorer::GetInspector(const ProcessInfo& info)

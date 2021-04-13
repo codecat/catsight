@@ -31,7 +31,9 @@ public:
 
 	void SetStyle();
 	void LoadFonts();
+
 	void BeginApp();
+	void EndApp();
 
 	Inspector* GetInspector(const ProcessInfo& info);
 	Inspector* GetInspector(int pid);
