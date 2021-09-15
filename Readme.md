@@ -48,6 +48,13 @@ Then, to actually run the CMake build:
 $ mkdir build
 $ cd build
 $ cmake ..
+$ make -j9
+```
+
+You can also use `ninja` by running CMake like this:
+
+```
+$ cmake .. -G Ninja
 $ ninja
 ```
 
